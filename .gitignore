@@ -1,0 +1,9 @@
+*ipynb
+.nextflow*
+*flowchart.svg
+*pid*log
+__pycache__/
+envs/*.sif
+*bck
+tmp/
+dataset/ptmdb/

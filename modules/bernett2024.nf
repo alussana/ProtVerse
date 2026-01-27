@@ -214,6 +214,7 @@ process bernett2024_features_tables {
         path 'input/dependency_*.tsv'
         path 'input/orthogroup_*.tsv'
         path 'input/humap3_*.tsv'
+        path 'input/lopit2025_*.tsv'
 
     output:
         path "training_bernett2024/examples.tsv.gz"
@@ -231,6 +232,7 @@ process bernett2024_features_tables {
     cat input/dependency_*.tsv | gzip > dependency.tsv.gz
     cat input/orthogroup_*.tsv | gzip > orthogroup.tsv.gz
     cat input/humap3_*.tsv | gzip > humap3.tsv.gz
+    cat input/lopit2025_*.tsv | gzip > lopit2025.tsv.gz
 
     cat \
         <(zcat gtex.tsv.gz | sed -n '1p' | cut -f1,3- \
@@ -313,6 +315,15 @@ process bernett2024_features_tables {
             | sort | uniq) \
         | gzip > training_bernett2024/humap3.tsv.gz
 
+    cat \
+        <(zcat lopit2025.tsv.gz | sed -n '1p' | cut -f1,3- \
+            | awk '{print "index\t"\$0}' | cut -f1,2,5-) \
+        <(zcat lopit2025.tsv.gz \
+            | sed '1d' | grep -v "label" | cut -f1,3- \
+            | awk 'NF{print \$2"_"\$3"\t"\$0}' | cut -f1,2,5- \
+            | sort | uniq) \
+        | gzip > training_bernett2024/lopit2025.tsv.gz
+
     bernett2024_join_features.py \\
         training_bernett2024/eprot.tsv.gz \\
         training_bernett2024/proteomehd.tsv.gz \\
@@ -323,6 +334,7 @@ process bernett2024_features_tables {
         training_bernett2024/dependency.tsv.gz \\
         training_bernett2024/orthogroup.tsv.gz \\
         training_bernett2024/humap3.tsv.gz \\
+        training_bernett2024/lopit2025.tsv.gz \\
         | grep -v "SREK1_ZRANB2" \\
         | gzip > training_bernett2024/examples.tsv.gz
     """

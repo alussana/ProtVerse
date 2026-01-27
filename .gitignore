@@ -5,5 +5,5 @@
 __pycache__/
 envs/*.sif
 *bck
+trace-*.txt
 tmp/
-dataset/ptmdb/

@@ -76,7 +76,7 @@ def main():
     df_stacked.dropna(subset=['Value'], inplace=True)
 
 
-    mid = 55
+    mid = 57
     halves = [feature_order[:mid], feature_order[mid:]]
     
     # horizontal - part 1    

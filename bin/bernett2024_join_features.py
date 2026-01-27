@@ -25,6 +25,7 @@ def main():
     dependency_file = sys.argv[7]
     orthogroup_file = sys.argv[8]
     human3_file = sys.argv[9]
+    lopit2025_file = sys.argv[10]
 
     eprot = pd.read_csv(eprot_file, sep='\t', index_col=0)
     proteomehd = pd.read_csv(proteomehd_file, sep='\t', index_col=0)
@@ -35,8 +36,9 @@ def main():
     dependency = pd.read_csv(dependency_file, sep='\t', index_col=0)
     orthogroup = pd.read_csv(orthogroup_file, sep='\t', index_col=0)
     humap3 = pd.read_csv(human3_file, sep='\t', index_col=0)
+    lopit2025 = pd.read_csv(lopit2025_file, sep='\t', index_col=0)
 
-    dfs = [eprot, proteomehd, mitchell2023, gtex, ptmdb, ubiquitination, dependency, orthogroup, humap3]
+    dfs = [eprot, proteomehd, mitchell2023, gtex, ptmdb, ubiquitination, dependency, orthogroup, humap3, lopit2025]
 
     for i in range(len(dfs)):
         duplicated_idx = [item for item, count in collections.Counter(dfs[i].index).items() if count > 1]

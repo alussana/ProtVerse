@@ -106,7 +106,8 @@ def main():
         'Ubiquitination': [i for i in range(90, 95)],
         'DepMap': [i for i in range(95, 108)],
         'Orthogroup': [i for i in range(108, 110)],
-        'hu.MAP 3.0': [110]
+        'hu.MAP 3.0': [110],
+        'Cotranslocation': [i for i in range(111, 114)],
     }
 
 
@@ -238,7 +239,8 @@ def main():
         'Ubiquitination': [90],
         'DepMap': [95],
         'Orthogroup': [108],
-        'hu.MAP 3.0': [110]
+        'hu.MAP 3.0': [110],
+        'Cotranslocation': [111],
     }
     
     plt.clf()

@@ -152,6 +152,7 @@ process translate_ids {
         path 'input/ptmdb_genes.txt'
         path 'input/proteomehd_genes.txt'
         path 'input/mitchell2023_genes.txt'
+        path 'input/lopit2025_genes.txt'
         path 'input/reactome_genes.txt'
 
     output:
@@ -174,6 +175,7 @@ process translate_ids {
         input/ptmdb_genes.txt \
         input/proteomehd_genes.txt \
         input/mitchell2023_genes.txt \
+        input/lopit2025_genes.txt \
         input/metabolism_genes.txt \
         input/reactome_genes.txt \
         ${params.starmap_n_proc} \

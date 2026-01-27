@@ -73,6 +73,15 @@ include { merge_ptmdb_exp } from './modules/ptmdb'
 include { get_ptmdb_genes } from './modules/ptmdb'
 include { ptmdb_featvec } from './modules/ptmdb'
 
+include { dl_lopit2025 } from './modules/lopit2025'
+include { lopit2025_prot_loc_changes } from './modules/lopit2025'
+include { get_lopit2025_genes } from './modules/lopit2025'
+include { lopit2025_featvec } from './modules/lopit2025'
+
+/*include { dl_tahoe_100m } from './modules/tahoe'
+include { dl_tahoe_100m_metadata } from './modules/tahoe'
+include { dl_tahoe_100m_hf } from './modules/tahoe'*/
+
 include { parse_ptmdb_imputed } from './modules/ptmdb_imputed'
 include { get_ptmdb_imputed_genes } from './modules/ptmdb_imputed'
 include { ptmdb_imputed_featvec } from './modules/ptmdb_imputed'
@@ -154,6 +163,7 @@ include { ubiquitination_features } from './modules/build_network'
 include { dep_features } from './modules/build_network'
 include { orthogroup_features } from './modules/build_network'
 include { humap_features } from './modules/build_network'
+include { lopit2025_features } from './modules/build_network'
 include { compute_edge_features } from './modules/build_network'
 include { compute_edge_weights; compute_edge_weights as metabolism_compute_edge_weights } from './modules/build_network'
 include { concat_edges; metabolism_concat_edges } from './modules/build_network'
@@ -298,6 +308,41 @@ workflow PTMDB {
 }
 
 
+/*workflow TAHOE {
+
+    main:
+        // download from google cloud
+        //h5ad_paths = dl_tahoe_100m()
+        //metadata = dl_tahoe_100m_metadata()
+
+        // download from hugging face
+        dl_tahoe_100m_hf()
+
+        
+}*/
+
+
+workflow LOPIT2025 {
+
+    main:
+        // download lopit2025 dataset
+        //lopit2025 = dl_lopit2025()
+
+        // build protein localization changes dataset
+        lopit2025_xlsx = Channel.fromPath( "${lopit2025_xlsx_path}" )
+        table = lopit2025_prot_loc_changes( lopit2025_xlsx )
+
+        // get list of entries (accessions)
+        gene_list = get_lopit2025_genes( table )
+
+
+    emit:
+        table
+        gene_list
+
+}
+
+
 workflow PTMDB_IMPUTED {
 
     main:
@@ -391,23 +436,6 @@ workflow UNIPROT {
 }
 
 
-workflow IVKAPHE {
-
-    // Get IV-KAPhE kinase-phosphosite association scores
-    
-    main:
-        net = download_ivkaphe_net()
-        table = ivkaphe_table( net )
-        table = ivkaphe_round( table )
-        gene_list = get_ivkaphe_genes( net )
-
-    emit:
-        table
-        gene_list
-
-}
-
-
 workflow UBIQUITINATION {
 
     // Get ubiquitination data from the source file and parse it
@@ -443,6 +471,7 @@ workflow MAP_IDS {
         ptmdb_genes
         proteomehd_genes
         mitchell2023_genes
+        lopit2025_genes
         all_reactome_genes
 
     main:
@@ -460,6 +489,7 @@ workflow MAP_IDS {
                                     ptmdb_genes,
                                     proteomehd_genes,
                                     mitchell2023_genes,
+                                    lopit2025_genes,
                                     all_reactome_genes )
 
         viz_ref_genes_coverage( unfiltered )
@@ -543,6 +573,25 @@ workflow FILTER_MITCHELL2023 {
         id = Channel.from('mitchell2023')
         tr_input = id.combine(target_matrix)
         f_matrix = translate_expand_matrix(tr_input, dict, dict_col )
+
+    emit:
+        f_matrix
+
+}
+
+
+workflow FILTER_LOPIT2025 {
+
+    take:
+        matrix
+        dict
+        dict_col
+
+    main:
+        target_matrix = filter_data_matrix_rows(matrix, dict, dict_col)
+        id = Channel.from('lopit2025')
+        tr_input = id.combine(target_matrix)
+        f_matrix = translatepy(tr_input, dict, dict_col )
 
     emit:
         f_matrix
@@ -765,6 +814,7 @@ workflow GENERATE_EXAMPLES {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap3_m
+        f_lopit2025_m
 
     main:
         // generate training data
@@ -826,7 +876,10 @@ workflow GENERATE_EXAMPLES {
         humap3_score_input = examples.combine( f_humap3_m )
         humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
-        
+        // build features from lopit`2025
+        lopit2025_featvec_input = examples.combine( f_lopit2025_m )
+        lopit2025_featvec_ch = lopit2025_featvec( lopit2025_featvec_input )
+                                    .collect()
         // join features together
         dataset = features_tables( eprot_featvec_ch,
                                    proteomehd_featvec_ch,
@@ -836,7 +889,8 @@ workflow GENERATE_EXAMPLES {
                                    dependency_featvec_ch,
                                    ubiquitination_featvec_ch,
                                    orthogroup_featvec_ch,
-                                   humap3_score_ch )/*,
+                                   humap3_score_ch,
+                                   lopit2025_featvec_ch )/*,
                                    ivkaphe_featvec_ch*/
 
         features_pca( dataset )
@@ -881,6 +935,8 @@ workflow GENERATE_EXAMPLES_METABOLISM {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap3_m
+        f_lopit2025_m
+        
 
     main:
         // generate training data
@@ -943,6 +999,11 @@ workflow GENERATE_EXAMPLES_METABOLISM {
         humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
         
+        // build features from lopit2025
+        lopit2025_featvec_input = examples.combine( f_lopit2025_m )
+        lopit2025_featvec_ch = lopit2025_featvec( lopit2025_featvec_input )
+                                    .collect()
+
         // join features together
         dataset = features_tables_metabolism( eprot_featvec_ch,
                                               proteomehd_featvec_ch,
@@ -952,7 +1013,8 @@ workflow GENERATE_EXAMPLES_METABOLISM {
                                               dependency_featvec_ch,
                                               ubiquitination_featvec_ch,
                                               orthogroup_featvec_ch,
-                                              humap3_score_ch )
+                                              humap3_score_ch,
+                                              lopit2025_featvec_ch )
 
         features_pca_metabolism( dataset )
         
@@ -998,6 +1060,7 @@ workflow GENERATE_EXAMPLES_BERNETT2024 {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap3_m
+        f_lopit2025_m
 
     main:
         // concatenate all gene pairs and split them in chunks
@@ -1053,6 +1116,11 @@ workflow GENERATE_EXAMPLES_BERNETT2024 {
         humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
 
+        // build features from lopit2025
+        lopit2025_featvec_input = examples.combine( f_lopit2025_m )
+        lopit2025_featvec_ch = lopit2025_featvec( lopit2025_featvec_input )
+                                    .collect()
+        
         // join features together
         dataset = bernett2024_features_tables( eprot_featvec_ch,
                                                proteomehd_featvec_ch,
@@ -1062,7 +1130,8 @@ workflow GENERATE_EXAMPLES_BERNETT2024 {
                                                ubiquitination_featvec_ch,
                                                dependency_featvec_ch,
                                                orthogroup_featvec_ch,
-                                               humap3_score_ch )
+                                               humap3_score_ch,
+                                               lopit2025_featvec_ch )
 
         bernett2024_features_pca( dataset )
 
@@ -1326,6 +1395,7 @@ workflow BUILD_NETWORK {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap_m
+        f_lopit2025_m
         gene_list
         pos_edges
         model
@@ -1377,6 +1447,10 @@ workflow BUILD_NETWORK {
         // humap features
         humap_features_input = gene_pairs.combine( f_humap_m )
         humap_features = humap_features( humap_features_input )
+
+        // lopit2025 features
+        lopit2025_features_input = gene_pairs.combine( f_lopit2025_m )
+        lopit2025_features = lopit2025_features( lopit2025_features_input )
         
         // join all features together, by gene pairs chunk's UUID
         edges_features_input = eprot_features
@@ -1388,6 +1462,7 @@ workflow BUILD_NETWORK {
                                     .join( orthogroup_features )
                                     .join( ubiquitination_features )
                                     .join( humap_features )
+                                    .join( lopit2025_features )
 
         // compute edges of the protverse
         edges_features = compute_edge_features( edges_features_input )
@@ -1471,7 +1546,9 @@ workflow {
     eprot = EPROT()
     mitchell2023 = MITCHELL2023()
     dependency = DEPENDENCY()
-    ptmdb = PTMDB() // edit create_gene_dict.py if switching to imputed ptmdb
+    ptmdb = PTMDB()
+    //tahoe = TAHOE()
+    lopit2025 = LOPIT2025()
     orthogroup = ORTHOGROUPS()
     ubiquitination = UBIQUITINATION()
     humap3 = HUMAP3()
@@ -1493,6 +1570,7 @@ workflow {
         ptmdb.gene_list,
         proteomehd.gene_list,
         mitchell2023.gene_list,
+        lopit2025.gene_list,
         reactome.hs_gene_list
     )
 
@@ -1525,6 +1603,9 @@ workflow {
     f_mitchell2023_m = FILTER_MITCHELL2023( mitchell2023.matrix,
                                             id_dict.unfiltered,
                                             'mitchell2023' )
+    f_lopit2025_m = FILTER_LOPIT2025( lopit2025.table,
+                                id_dict.unfiltered,
+                                'lopit2025' )
     f_dependency_m = FILTER_DEPENDENCY( dependency.matrix,
                                         id_dict.unfiltered,
                                         'depmap' )
@@ -1558,9 +1639,8 @@ workflow {
         orthogroup.pcs,
         f_ptmdb_m,
         f_ubiquitination_m,
-        f_humap3_m/*,
-        //f_ivkaphe_m,
-        ivkaphe_kinases*/
+        f_humap3_m,
+        f_lopit2025_m
     )
 
 
@@ -1579,7 +1659,8 @@ workflow {
         orthogroup.pcs,
         f_ptmdb_m,
         f_ubiquitination_m,
-        f_humap3_m
+        f_humap3_m,
+        f_lopit2025_m
     )
 
 
@@ -1597,6 +1678,7 @@ workflow {
         f_ptmdb_m,
         f_ubiquitination_m,
         f_humap3_m,
+        f_lopit2025_m
     )
 
 
@@ -1672,6 +1754,7 @@ workflow {
         f_ptmdb_m,
         f_ubiquitination_m,
         f_humap3_m,
+        f_lopit2025_m,
         id_dict.unfiltered,
         pos_edges,
         signalling_model,

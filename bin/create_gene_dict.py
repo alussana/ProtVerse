@@ -70,6 +70,7 @@ def main():
     ptmdb_genes_file = 'input/ptmdb_genes.txt'
     proteomehd_genes_file = 'input/proteomehd_genes.txt'
     mitchell2023_genes_file = 'input/mitchell2023_genes.txt'
+    lopit2025_genes_file = 'input/lopit2025_genes.txt'
     metabolism_gene_file = 'input/metabolism_genes.txt'
     reactome_genes_file = 'input/reactome_genes.txt'
     n_proc = 2
@@ -86,9 +87,10 @@ def main():
     ptmdb_genes_file = sys.argv[10]
     proteomehd_genes_file = sys.argv[11]
     mitchell2023_genes_file = sys.argv[12]
-    metabolism_genes_file = sys.argv[13]
-    reactome_genes_file = sys.argv[14]
-    n_proc = int(sys.argv[15])
+    lopit2025_genes_file = sys.argv[13]
+    metabolism_genes_file = sys.argv[14]
+    reactome_genes_file = sys.argv[15]
+    n_proc = int(sys.argv[16])
 
     ref_genes = []
     with open(ref_genes_file) as genes_fh:
@@ -145,6 +147,11 @@ def main():
         for gene in genes_fh:
             mitchell2023_genes.append(gene.strip())
 
+    lopit2025_genes = []
+    with open(lopit2025_genes_file) as genes_fh:
+        for gene in genes_fh:
+            lopit2025_genes.append(gene.strip())    
+
     metabolism_genes = []
     with open(metabolism_genes_file) as genes_fh:
         for gene in genes_fh:
@@ -173,6 +180,7 @@ def main():
         'ptmdb': 0,
         'proteomehd': 'Gene_Name',
         'mitchell2023': 'Gene_Name',
+        'lopit2025': 0,
         'reactome': 'Ensembl',
     }
 
@@ -188,6 +196,7 @@ def main():
         'ptmdb': ptmdb_genes,
         'proteomehd': proteomehd_genes,
         'mitchell2023': mitchell2023_genes,
+        'lopit2025': lopit2025_genes,
         'reactome': reactome_genes
     }
 

@@ -102,6 +102,7 @@ process features_tables {
         path 'input/ubiquitination_*.tsv'
         path 'input/orthogroup_*.tsv'
         path 'input/humap_*.tsv'
+        path 'input/lopit2025_*.tsv'
         //path 'input/ivkaphe_*.tsv'
 
     output:
@@ -120,6 +121,7 @@ process features_tables {
     cat input/ubiquitination_*.tsv | gzip > ubiquitination.tsv.gz
     cat input/orthogroup_*.tsv | gzip > orthogroup.tsv.gz
     cat input/humap_*.tsv | gzip > humap.tsv.gz
+    cat input/lopit2025_*.tsv | gzip > lopit2025.tsv.gz
     #cat input/ivkaphe_*.tsv | gzip > ivkaphe.tsv.gz
 
     cat \
@@ -194,6 +196,15 @@ process features_tables {
             | sort | uniq) \
         | gzip > training/dependency.tsv.gz
 
+    cat \
+        <(zcat lopit2025.tsv.gz | sed -n '1p' | cut -f1,3- \
+            | awk '{print "index\t"\$0}' | cut -f1,2,5-) \
+        <(zcat lopit2025.tsv.gz \
+            | sed '1d' | grep -v "label" | cut -f1,3- \
+            | awk 'NF{print \$2"_"\$3"\t"\$0}' | cut -f1,2,5- \
+            | sort | uniq) \
+        | gzip > training/lopit2025.tsv.gz
+
     #cat \
     #    <(zcat ivkaphe.tsv.gz | sed -n '1p' | cut -f1,3- \
     #        | awk '{print "index\t"\$0}' | cut -f1,2,5-) \
@@ -222,6 +233,7 @@ process features_tables {
         training/dependency.tsv.gz \
         training/orthogroup.tsv.gz \
         training/humap.tsv.gz \
+        training/lopit2025.tsv.gz \
         | gzip > training/examples.tsv.gz
     """
 
@@ -255,6 +267,7 @@ process features_tables_metabolism {
         path 'input/ubiquitination_*.tsv'
         path 'input/orthogroup_*.tsv'
         path 'input/humap_*.tsv'
+        path 'input/lopit2025_*.tsv'
 
     output:
         path "training/examples_metabolism.tsv.gz"
@@ -272,7 +285,7 @@ process features_tables_metabolism {
     cat input/ubiquitination_*.tsv | gzip > ubiquitination.tsv.gz
     cat input/orthogroup_*.tsv | gzip > orthogroup.tsv.gz
     cat input/humap_*.tsv | gzip > humap.tsv.gz
-    #cat input/ivkaphe_*.tsv | gzip > ivkaphe.tsv.gz
+    cat input/lopit2025_*.tsv | gzip > lopit2025.tsv.gz
 
     cat \
         <(zcat gtex.tsv.gz | sed -n '1p' | cut -f1,3- \
@@ -355,6 +368,15 @@ process features_tables_metabolism {
             | sort | uniq) \
         | gzip > training/humap.tsv.gz
 
+    cat \
+        <(zcat lopit2025.tsv.gz | sed -n '1p' | cut -f1,3- \
+            | awk '{print "index\t"\$0}' | cut -f1,2,5-) \
+        <(zcat lopit2025.tsv.gz \
+            | sed '1d' | grep -v "label" | cut -f1,3- \
+            | awk 'NF{print \$2"_"\$3"\t"\$0}' | cut -f1,2,5- \
+            | sort | uniq) \
+        | gzip > training/lopit2025.tsv.gz
+
     join_features.py \
         training/eprot.tsv.gz \
         training/proteomehd.tsv.gz \
@@ -365,6 +387,7 @@ process features_tables_metabolism {
         training/dependency.tsv.gz \
         training/orthogroup.tsv.gz \
         training/humap.tsv.gz \
+        training/lopit2025.tsv.gz \
         | gzip > training/examples_metabolism.tsv.gz
     """
 
@@ -620,8 +643,8 @@ process features_distrib {
 
     features_distrib.py \\
         input/examples.tsv.gz \\
-        training/features_distrib_h_to_55.pdf \\
-        training/features_distrib_h_from_55.pdf \\
+        training/features_distrib_h_1of2.pdf \\
+        training/features_distrib_h_2of2.pdf \\
         training/features_distrib_v.pdf
     """
 
@@ -651,8 +674,8 @@ process features_distrib_metabolism {
 
     features_distrib.py \\
         input/examples.tsv.gz \\
-        training/features_distrib_metabolism_h_to_55.pdf \\
-        training/features_distrib_metabolism_h_from_55.pdf \\
+        training/features_distrib_metabolism_h_1of2.pdf \\
+        training/features_distrib_metabolism_h_2of2.pdf \\
         training/features_distrib_metabolism_v.pdf
     """
 
@@ -767,14 +790,6 @@ process signalling_train_valid_xgb {
         training_signalling_xgb/mdi_importance_maxDepth${params.signalling_xgb_max_depth}_nEst${params.signalling_xgb_n_estimators}_lr${params.signalling_xgb_lr}.pdf \
         training_signalling_xgb/perm_importance_train_maxDepth${params.signalling_xgb_max_depth}_nEst${params.signalling_xgb_n_estimators}_lr${params.signalling_xgb_lr}.pdf \
         training_signalling_xgb/perm_importance_valid_maxDepth${params.signalling_xgb_max_depth}_nEst${params.signalling_xgb_n_estimators}_lr${params.signalling_xgb_lr}.pdf
-
-    cp \
-        training_signalling_xgb/forest_maxDepth${params.signalling_xgb_max_depth}_nEst${params.signalling_xgb_n_estimators}_lr${params.signalling_xgb_lr}.pkl \
-        ${out_dir}/training_signalling_xgb/forest_maxDepth${params.signalling_xgb_max_depth}_nEst${params.signalling_xgb_n_estimators}_lr${params.signalling_xgb_lr}.pkl
-
-    cp \
-        training_signalling_xgb/*.pdf \
-        ${out_dir}/training_signalling_xgb/
     """
 }
 

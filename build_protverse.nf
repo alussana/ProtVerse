@@ -16,9 +16,10 @@ include { translatepy_no_pub_rand_id } from './modules/utils'
 include { translate_expand_matrix } from './modules/utils'
 include { translate_expand_pairs } from './modules/utils'
 include { translate_expand_list } from './modules/utils'
-include { publish } from './modules/utils'
+include { publish; publish as _publish } from './modules/utils'
 include { split } from './modules/utils'
 include { concatenate } from './modules/utils'
+include { IDa2uniprot2IDb } from './modules/utils'
 
 include { dl_pc13_intact } from './modules/pathwaycommons'
 include { unweighted_intact } from './modules/pathwaycommons'
@@ -89,11 +90,12 @@ include { ptmdb_imputed_featvec } from './modules/ptmdb_imputed'
 include { download_essentiality_matrices } from './modules/depmap'
 include { get_depmap_genes } from './modules/depmap'
 include { dependency_featvec } from './modules/depmap'
-
-include { dl_depmap20q4v2 } from './modules/depmap20q4v2'
-include { parse_depmap20q4v2 } from './modules/depmap20q4v2'
-include { covar_norm } from './modules/depmap20q4v2'
-include { get_depmap20q4v2_genes } from './modules/depmap20q4v2'
+include { download_depmap_file_list } from './modules/depmap'
+include { download_depmap_lof_mutations } from './modules/depmap'
+include { download_depmap_gene_dependency } from './modules/depmap'
+include { download_depmap_models_info } from './modules/depmap'
+include { translate_depmap_lof_table } from './modules/depmap'
+include { make_seed_list } from './modules/depmap'
 
 include { download_orthogroups } from './modules/orthogroups2015'
 include { get_orthogroups_genes } from './modules/orthogroups2015'
@@ -167,7 +169,7 @@ include { lopit2025_features } from './modules/build_network'
 include { compute_edge_features } from './modules/build_network'
 include { compute_edge_weights; compute_edge_weights as metabolism_compute_edge_weights } from './modules/build_network'
 include { concat_edges; metabolism_concat_edges } from './modules/build_network'
-include { edges_tsv_2_parquet } from './modules/build_network'
+include { edges_tsv_2_parquet; edges_tsv_2_parquet as _edges_tsv_2_parquet } from './modules/build_network'
 include { add_edges } from './modules/build_network'
 include { filter_edge_score; metabolism_filter_edge_score } from './modules/build_network'
 include { transform_edge_score; metabolism_transform_edge_score } from './modules/build_network'
@@ -176,6 +178,12 @@ include { gene_adjacency_vector } from './modules/build_network'
 include { correlate_adjacencies } from './modules/build_network'
 include { w_net_stats } from './modules/build_network'
 include { filter_reactome_genes } from './modules/build_network'
+
+include { disparity_filter_prune } from './modules/graph_alg'
+include { plot_parquet_net_stats } from './modules/graph_alg'
+include { cat_pq_graphs } from './modules/graph_alg'
+include { cat_tsv_graphs } from './modules/graph_alg'
+include { rwr_lof } from './modules/graph_alg'
 
 
 workflow REACTOME {
@@ -222,6 +230,22 @@ workflow REACTOME {
         hs_sets
         hs_gene_list
                 
+}
+
+
+workflow Gene_Synonym__2__Gene_Name {
+
+    take:
+        uniprot_id_dict
+
+    main:
+        dict = IDa2uniprot2IDb( uniprot_id_dict,
+                                'Gene_Synonym',
+                                'Gene_Name' )
+
+    emit:
+        dict
+
 }
 
 
@@ -365,9 +389,19 @@ workflow DEPENDENCY {
         dependency = download_essentiality_matrices()
         gene_list = get_depmap_genes( dependency.CRISPRcleanR_FC )
         matrix = dependency.CRISPRcleanR_FC
+        
+        // get cell line metadata and info from DepMap Portal
+        files_meta = download_depmap_file_list()
+        lof_mutations = download_depmap_lof_mutations( files_meta )
+        crispr_dependency = download_depmap_gene_dependency( files_meta )
+        models = download_depmap_models_info( files_meta )   
+ 
     emit:
         matrix
         gene_list
+        lof_mutations
+        crispr_dependency
+        models
 
 }
 
@@ -1475,7 +1509,8 @@ workflow BUILD_NETWORK {
                                     .map{file -> tuple( file.baseName, file )}
 
         // export edges in parquet
-        /*TMPedges_parquet = edges_tsv_2_parquet( edges_unfiltered )TMP*/
+        edges_parquet = edges_tsv_2_parquet( edges_unfiltered )
+        publish(edges_parquet, "wcsn/edges.parquet")
 
         // generate chunks of gene lists
         /*ref_genes = get_ref_genes( gene_list, 64 ).flatMap().map{it -> it}
@@ -1508,10 +1543,13 @@ workflow BUILD_NETWORK {
         /*edges_reactome_genes = filter_reactome_genes( edges,
                                                       gene_list )*/
 
-        // metabolic model edges
+        // metabolism model edges
         metabolism_edges_chunks = metabolism_compute_edge_weights( edges_features,
                                                                    metabolic_model )
         metabolism_edges_unfiltered = metabolism_concat_edges( metabolism_edges_chunks.collect() )
+        // export metabolic edges to parquet
+        metabolism_edges_parquet = _edges_tsv_2_parquet( metabolism_edges_unfiltered )
+        _publish(edges_parquet, "wcmn/edges.parquet")
         // filter edge score (this generates "wcmn/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv")
         metabolism_edges_filtered = metabolism_filter_edge_score( metabolism_edges_unfiltered )
         // transform edge score (this generates "wcmn/edges_${params.wholecellnet_edge_min_threshold}minScore_transformed.tsv")
@@ -1520,10 +1558,73 @@ workflow BUILD_NETWORK {
 
     emit:
         edges
-        //edges_parquet
+        edges_parquet
+        metabolism_edges_parquet
         //edges_reactome_genes
         metabolism_edges
 
+}
+
+
+workflow DISPARITY_FILTER_WCSN {
+
+    take:
+        edges_parquet
+
+    main:
+        // prune network
+        edges_pruned_parquet = disparity_filter_prune( edges_parquet )
+        publish( edges_pruned_parquet, 'wcsn/edges_pruned.tsv')
+
+        // plot network stats
+        //plot_parquet_net_stats( edges_pruned_parquet, "wcsn")
+    
+    emit:
+        edges_pruned_parquet
+
+}
+
+
+workflow DISPARITY_FILTER_WCMN {
+
+    take:
+        edges_parquet
+
+    main:
+        // prune network
+        edges_pruned_parquet = disparity_filter_prune( edges_parquet )
+        publish( edges_pruned_parquet, 'wcmn/edges_pruned.tsv')
+
+        // plot network stats
+        //plot_parquet_net_stats( edges_pruned_parquet, "wcmn")
+
+    emit:
+        edges_pruned_parquet
+
+}
+
+
+workflow NET_PROPAGATION {
+
+    take:
+        wcsn_filtered_pq
+        wcmn_filtered_pq
+        depmap_lof_table
+        depmap_dependency_table
+        depmap_models_table
+        dict
+
+    main:
+        // add edges from signalling and metabolism networks
+        graph_tsv = cat_tsv_graphs( wcsn_filtered_pq, wcmn_filtered_pq )
+
+        depmap_lof_table = translate_depmap_lof_table( depmap_lof_table, dict )
+
+        // run propagation of lof mutation for each model
+        lof_seeds = make_seed_list( depmap_lof_table )
+                        .flatMap()
+                        .map{file -> tuple( file.baseName, file )}
+        //rwr_lof( graph_tsv, lof_seeds )
 }
 
 
@@ -1554,6 +1655,9 @@ workflow {
     humap3 = HUMAP3()
     proteomehd = PROTEOMEHD()
     uniprot = UNIPROT()
+
+    // Generate Gene Synonym to Gene Name dictionary through UniProt
+    Gene_Synonym_2_Gene_Name__dict = Gene_Synonym__2__Gene_Name( uniprot.idmapping ) 
 
     // Get gene id translations
     id_dict = MAP_IDS( 
@@ -1761,6 +1865,18 @@ workflow {
         metabolic_model
     )
 
+
+    // prune nets using disparity filter
+    wcsn_filtered_pq = DISPARITY_FILTER_WCSN( protverse.edges_parquet )
+    wcmn_filtered_pq = DISPARITY_FILTER_WCMN( protverse.metabolism_edges_parquet )
+    
+    // perform network propagation with DepMap data
+    NET_PROPAGATION( wcsn_filtered_pq,
+                     wcmn_filtered_pq,
+                     dependency.lof_mutations,    
+                     dependency.crispr_dependency,
+                     dependency.models,
+                     Gene_Synonym_2_Gene_Name__dict )
 
     // save nextflow.config 
     PUBLISH_CONFIG()

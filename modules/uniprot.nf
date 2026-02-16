@@ -535,3 +535,19 @@ process viz_ref_genes_coverage {
         databases/uniprot/missing_dendrogram.pdf
     """
 }
+
+
+workflow Gene_Synonym__2__Gene_Name {
+
+    take:
+        uniprot_id_dict
+
+    main:
+        dict = IDa2uniprot2IDb( uniprot_id_dict,
+                                'Gene_Synonym',
+                                'Gene_Name' )
+
+    emit:
+        dict
+
+}

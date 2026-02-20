@@ -189,22 +189,109 @@ a list of seed nodes
 */
 process rwr_lof {
 
+    memory '32G'
+    cpus 12
+
     input:
         path 'input/edges.tsv.gz'
         tuple val(id),
               file('input/seeds.txt')
 
     output:
-        path "rwr_lof/${id}.tsv.gz"
+        tuple val(id),
+              file("rwr_lof/${id}.tsv.gz")
 
     script:
     """
-    mkdir -p rwr_lof
+    mkdir -p rwr_lof output
 
-    rwr.py \\
-        input/edges.tsv.gz \\
-        input/seeds.txt \\
-    | gzip > rwr_lof/${id}.tsv.gz
+    zcat input/edges.tsv.gz \\
+        | sed '1d' \\
+        | cut -f1,2 \\
+        | tr '\\t' '\\n' \\
+        | sort -u \\
+        > nodes.txt
+
+    if grep -F -f input/seeds.txt -q nodes.txt; then
+        rwr.py \\
+            --edges-has-header \\
+            --col-v "source" \\
+            --col-u "target";   
+    else
+        echo "No seeds" > output/rwr_pvalues.tsv;
+    fi
+
+    gzip < output/rwr_pvalues.tsv > rwr_lof/${id}.tsv.gz
+    """
+
+}
+
+
+/*
+[...]
+*/
+process dependency_vs_propagation {
+
+    input:
+        tuple val(id),
+              file('input/rwr.tsv.gz')
+        path 'input/gene_dependency.csv'
+
+    output:
+        path "rwr_vs_dependency/${id}.tsv"
+
+    script:
+    """
+    mkdir -p rwr_vs_dependency
+
+    if [ "\$(zcat input/rwr.tsv.gz)" == "No seeds" ]; then 
+        touch rwr_vs_dependency/${id}.tsv
+    elif [ \$(zcat input/rwr.tsv.gz | awk '\$3<0.01' | wc -l) -eq 0 ]; then
+        touch rwr_vs_dependency/${id}.tsv
+    elif grep -F "${id}" -q input/gene_dependency.csv; then
+        cat \\
+            <(sed -n '1p' input/gene_dependency.csv) \\
+            <(grep "${id}" < input/gene_dependency.csv) \\
+            > dep.tsv;
+        rwr_vs_dependency.py dep.tsv input/rwr.tsv.gz \\
+            > rwr_vs_dependency/${id}.tsv;               
+    else
+        touch rwr_vs_dependency/${id}.tsv;
+    fi
+    """
+
+}
+
+
+/*
+[...]
+*/
+process plot_wilcox {
+
+    publishDir "${out_dir}",
+        pattern: "rwr_vs_dependency/wilcox/*.pdf",
+        mode: 'copy'
+
+    input:
+        path "input/protverse/*.tsv"
+        path "input/string/*.tsv"
+
+    output:
+        path "rwr_vs_dependency/wilcox/*.pdf"
+
+    script:
+    """
+    mkdir -p rwr_vs_dependency/wilcox
+
+    cat input/protverse/*tsv | awk 'NF' > U_p_protverse.tsv
+    cat input/string/*tsv | awk 'NF' > U_p_string.tsv
+
+    plot_wilcox.py \\
+        U_p_protverse.tsv \\
+        U_p_string.tsv \\
+        rwr_vs_dependency/wilcox/
+
+    touch rwr_vs_dependency/wilcox/phony.pdf
     """
 
 }

@@ -20,6 +20,7 @@ include { publish; publish as _publish } from './modules/utils'
 include { split } from './modules/utils'
 include { concatenate } from './modules/utils'
 include { IDa2uniprot2IDb } from './modules/utils'
+include { IDa2uniprot2IDb_vec } from './modules/utils'
 
 include { dl_pc13_intact } from './modules/pathwaycommons'
 include { unweighted_intact } from './modules/pathwaycommons'
@@ -95,6 +96,7 @@ include { download_depmap_lof_mutations } from './modules/depmap'
 include { download_depmap_gene_dependency } from './modules/depmap'
 include { download_depmap_models_info } from './modules/depmap'
 include { translate_depmap_lof_table } from './modules/depmap'
+include { translate_depmap_dependency_info } from './modules/depmap'
 include { make_seed_list } from './modules/depmap'
 
 include { download_orthogroups } from './modules/orthogroups2015'
@@ -105,6 +107,10 @@ include { download_humap3_net } from './modules/humap3'
 include { humap3_table } from './modules/humap3'
 include { get_humap3_genes } from './modules/humap3'
 include { humap3_score } from './modules/humap3'
+
+include { df_string_9606_v12 } from './modules/stringdb'
+include { translate_string } from './modules/stringdb'
+include { filter_and_canonicalize } from './modules/stringdb'
 
 include { get_ubiquitination } from './modules/ubiquitination'
 include { parse_ubiquitination } from './modules/ubiquitination'
@@ -117,6 +123,7 @@ include { interpro } from './modules/uniprot'
 include { length } from './modules/uniprot'
 include { dl_human_ids } from './modules/uniprot'
 include { filter_idmapping } from './modules/uniprot'
+include { process_idmapping } from './modules/uniprot'
 include { get_proteome_genes } from './modules/uniprot'
 include { translate_ids; translate_ids as tr_ids } from './modules/uniprot'
 include { filter_id_dict } from './modules/uniprot'
@@ -183,7 +190,9 @@ include { disparity_filter_prune } from './modules/graph_alg'
 include { plot_parquet_net_stats } from './modules/graph_alg'
 include { cat_pq_graphs } from './modules/graph_alg'
 include { cat_tsv_graphs } from './modules/graph_alg'
-include { rwr_lof } from './modules/graph_alg'
+include { rwr_lof; rwr_lof as rwr_lof_ } from './modules/graph_alg'
+include { dependency_vs_propagation; dependency_vs_propagation as dependency_vs_propagation_ } from './modules/graph_alg'
+include { plot_wilcox } from './modules/graph_alg'
 
 
 workflow REACTOME {
@@ -242,6 +251,22 @@ workflow Gene_Synonym__2__Gene_Name {
         dict = IDa2uniprot2IDb( uniprot_id_dict,
                                 'Gene_Synonym',
                                 'Gene_Name' )
+
+    emit:
+        dict
+
+}
+
+
+workflow Ensembl_PRO__2__Gene_Name {
+
+    take:
+        uniprot_id_dict
+
+    main:
+        dict = IDa2uniprot2IDb_vec( uniprot_id_dict,
+                                    'Ensembl_PRO',
+                                    'Gene_Name' )
 
     emit:
         dict
@@ -454,16 +479,34 @@ workflow HUMAP3 {
 }
 
 
+workflow STRING {
+
+    take:
+        dict
+
+    main:
+        edges = df_string_9606_v12()
+        edges = translate_string( edges, dict )
+        edges = filter_and_canonicalize( edges )
+        
+    emit:
+        edges
+
+}
+
+
 workflow UNIPROT {
 
     main:
         ref_prot = dl_ref_proteome()
         idmapping_all = dl_human_ids()
         idmapping = filter_idmapping( idmapping_all )
+        idmapping_p = process_idmapping( idmapping_all )
         uniprot2gene_name_and_synonym_dict = uniprot2gene_name_and_synonym( idmapping_all )
         gene_list = get_proteome_genes( ref_prot )
 
     emit:
+        idmapping_p
         idmapping
         gene_list
         uniprot2gene_name_and_synonym_dict
@@ -1613,18 +1656,36 @@ workflow NET_PROPAGATION {
         depmap_dependency_table
         depmap_models_table
         dict
+        string_tsv
 
     main:
         // add edges from signalling and metabolism networks
         graph_tsv = cat_tsv_graphs( wcsn_filtered_pq, wcmn_filtered_pq )
 
+        // translate gene identifiers
         depmap_lof_table = translate_depmap_lof_table( depmap_lof_table, dict )
+        depmap_dependency_table = translate_depmap_dependency_info( depmap_dependency_table, dict )
 
         // run propagation of lof mutation for each model
         lof_seeds = make_seed_list( depmap_lof_table )
                         .flatMap()
                         .map{file -> tuple( file.baseName, file )}
-        //rwr_lof( graph_tsv, lof_seeds )
+        
+
+        rwr_lof_protverse = rwr_lof( graph_tsv, lof_seeds )
+
+        rwr_lof_string = rwr_lof_( string_tsv, lof_seeds)
+        
+
+
+        // compare gene dependency and propagation scores
+        wilcox_protverse = dependency_vs_propagation( rwr_lof_protverse, depmap_dependency_table )
+                              .collect()
+        wilcox_string = dependency_vs_propagation_( rwr_lof_string, depmap_dependency_table )
+                              .collect()
+        plot_wilcox( wilcox_protverse, wilcox_string )
+        
+
 }
 
 
@@ -1641,6 +1702,12 @@ workflow PUBLISH_CONFIG {
 
 workflow {
 
+    // Generate id mapping dictionaries through UniProt
+    uniprot = UNIPROT()
+    Gene_Synonym_2_Gene_Name__dict = Gene_Synonym__2__Gene_Name( uniprot.idmapping ) 
+    Ensembl_PRO_2_Gene_Name_dict = Ensembl_PRO__2__Gene_Name( uniprot.idmapping_p )
+
+    
     // Get gene interaction and omics data from external sources
     reactome = REACTOME()
     gtex = GTEX()
@@ -1654,11 +1721,9 @@ workflow {
     ubiquitination = UBIQUITINATION()
     humap3 = HUMAP3()
     proteomehd = PROTEOMEHD()
-    uniprot = UNIPROT()
+    string = STRING( Ensembl_PRO_2_Gene_Name_dict )
 
-    // Generate Gene Synonym to Gene Name dictionary through UniProt
-    Gene_Synonym_2_Gene_Name__dict = Gene_Synonym__2__Gene_Name( uniprot.idmapping ) 
-
+    
     // Get gene id translations
     id_dict = MAP_IDS( 
         uniprot.gene_list,
@@ -1876,7 +1941,8 @@ workflow {
                      dependency.lof_mutations,    
                      dependency.crispr_dependency,
                      dependency.models,
-                     Gene_Synonym_2_Gene_Name__dict )
+                     Gene_Synonym_2_Gene_Name__dict,
+                     string )
 
     // save nextflow.config 
     PUBLISH_CONFIG()

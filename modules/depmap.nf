@@ -312,7 +312,7 @@ process download_depmap_models_info {
 
 
 /*
-[...]
+only select default lof entries for models
 */
 process make_seed_list {
 
@@ -333,7 +333,8 @@ process make_seed_list {
         > genes.txt
 
     cat input/lof_mutations.csv \\
-        | sed '1d' | cut -d ',' -f 4,7- | tr ',' '\\t' | awk 'NF' \\
+        | awk -F ',' '\$5=="Yes"' \\
+        | sed '1d' | cut -d ',' -f 3,7- | tr ',' '\\t' | awk 'NF' \\
         > mutations.tsv
 
     while IFS=\$'\\t' read -r id mutations; do \\
@@ -395,6 +396,57 @@ process translate_depmap_lof_table {
         header_translated.csv \\
         <(sed '1d' input/lof_mutations.csv) \\
         > databases/depMap/lof_mutations_translated.csv
+    """
+
+}
+
+
+/*
+edit the header of input/gene_dependency.csv so that gene identifiers,
+reported as:
+"<Gene_Synonym or Gene_Name> (<GeneID>)"
+become:
+"<Gene_Name>" 
+*/
+process translate_depmap_dependency_info {
+
+    publishDir "${out_dir}",
+                pattern: "databases/depMap/*.csv",
+                mode: 'copy'
+
+    input:
+        path 'input/gene_dependency.csv'
+        path 'input/dict.tsv'
+
+    output:
+        path 'databases/depMap/gene_dependency_translated.csv'
+
+    script:
+    """
+    mkdir -p databases/depMap/
+    
+    cat input/gene_dependency.csv \\
+        | sed -n '1p' | tr "," "\\n" | awk 'NF' \\
+        | tr -s " " "\\t" | tr -d '()' \\
+        > target_name_id.tsv
+
+    tr.py \\
+        input/dict.tsv \\
+        target_name_id.tsv \\
+        1 \\
+        3 \\
+        1 \\
+        1 \\
+        > target_name_id_translated.tsv
+
+    cat target_name_id_translated.tsv \\
+        | cut -f1 | awk 'NF' | tr "\\n" "," | sed 's/,\$//' \\
+         > header_translated.csv
+
+    cat \\
+        <(awk '{print ","\$0}' header_translated.csv) \\
+        <(sed '1d' input/gene_dependency.csv) \\
+        > databases/depMap/gene_dependency_translated.csv
     """
 
 }

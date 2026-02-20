@@ -58,6 +58,7 @@ process dl_human_ids {
 
 }
 
+
 /*
 filter the UniProt id mapping information to only incude mapping to:
 
@@ -95,6 +96,48 @@ process filter_idmapping {
     """
 
 }
+
+
+/*
+filter the UniProt id mapping information to only incude mapping to:
+
+Gene_Name
+GeneID
+Ensembl
+Gene_Synonym
+
+NOTE: Ensembl gets truncated e.g. ENSG00000281151.2 --> ENSG00000281151
+*/
+process process_idmapping {
+
+    publishDir "${out_dir}",
+                pattern: 'databases/uniprot/idmapping.tsv',
+                mode: 'copy'
+
+    input:
+        path 'input/HUMAN_9606_idmapping.dat.gz'
+
+    output:
+        path 'databases/uniprot/idmapping.tsv'
+
+    script:
+    """
+    mkdir -p databases/uniprot
+
+    echo -e "Gene_Name\\nGeneID\\nEnsembl\\nGene_Synonym\\nEnsembl_PRO" \\
+        > idtypes.txt
+
+    zcat input/HUMAN_9606_idmapping.dat.gz \\
+        | grep -w -f idtypes.txt \\
+        | awk '{split(\$1, a, "-"); print a[1]"\\t"\$2"\\t"\$3}' \\
+        | sed -r 's/(Ensembl\\tENSG[0-9]+)\\.[0-9]+\$/\\1/' \\
+        | sed -r 's/(Ensembl_PRO\\tENSP[0-9]+)\\.[0-9]+\$/\\1/' \\
+        | sed -r 's/(UniProtKB-ID\\t[0-9A-Z]+)_HUMAN\$/\\1/' \\
+        > databases/uniprot/idmapping.tsv
+    """
+
+}
+
 
 /*
 define list of reference primary gene names for the human reference proteome

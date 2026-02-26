@@ -27,6 +27,7 @@ def main():
     orthogroup_file = sys.argv[7]
     ubiquitination_file = sys.argv[8]
     humap_file = sys.argv[9]
+    lopit2025_file = sys.argv[10]
 
     # use pandas
     eprot = pd.read_csv(eprot_file, sep='\t').set_index('index')
@@ -38,6 +39,7 @@ def main():
     orthogroup = pd.read_csv(orthogroup_file, sep='\t').set_index('index')
     ubiquitination = pd.read_csv(ubiquitination_file, sep='\t').set_index('index')
     humap = pd.read_csv(humap_file, sep='\t').set_index('index')
+    lopit2025 = pd.read_csv(lopit2025_file, sep='\t').set_index('index')
     """ use dask
     eprot = dd.read_csv(eprot_file, sep='\t').set_index('index')
     gtex = dd.read_csv(gtex_file, sep='\t').set_index('index')
@@ -59,7 +61,7 @@ def main():
 
     # merge all partial input vectors
     # use pandas
-    dfs = [eprot, proteomehd, mitchell2023, gtex, ptmdb, dependency, orthogroup, ubiquitination, humap]
+    dfs = [eprot, proteomehd, mitchell2023, gtex, ptmdb, dependency, orthogroup, ubiquitination, humap, lopit2025]
     edges_features = pd.concat(dfs, axis=1)
     """ use dask
     edges_features = dd.merge(eprot, gtex)

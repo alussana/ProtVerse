@@ -22,7 +22,7 @@ process publish {
     """
     mkdir -p \$(dirname ${outputFile})
     
-    cp input/file ${outputFile}
+    cp -r input/file ${outputFile}
     """
 
 }
@@ -631,6 +631,104 @@ process concat_w_id {
         <(cat input/*) \
         | awk 'NF' \
         > filtered_data/${id}
+    """
+
+}
+
+
+/*
+3-fields tab-delimited file
+
+provides mapping in this order:
+
+IDa --->  UniProt AC ---> IDb
+
+all ids of nomenclature IDa are mapped to the corresponding UniProt ACs,
+and the UniProt ACs are then mapped to the corresponding ids of nomenclature
+IDb. For example, all ENSP ids are mapped to their UniProt AC. Then, each of
+the UniProt AC identifiers is mapped to HGNC ids.
+
+.META:
+1. IDa
+2. UniProt AC referred to IDa
+3. IDb referred to UniProt AC
+*/
+process IDa2uniprot2IDb {
+
+    publishDir "${out_dir}",
+                pattern: "databases/uniprot/${IDa}2uniprot2${IDb}.tsv",
+                mode: 'copy'
+
+    input:
+        path 'input/mapping.tsv'
+        val IDa
+        val IDb
+
+    output:
+        path "databases/uniprot/${IDa}2uniprot2${IDb}.tsv"
+
+    script:
+    """
+    mkdir -p databases/uniprot
+
+    grep -w -f <(echo -e "${IDa}\\n${IDb}") \\
+        < input/mapping.tsv \\
+        | gzip > mapping.tsv.gz
+
+    IDa2uniprot2IDb.py \\
+        mapping.tsv.gz \\
+        ${IDa} \\
+        ${IDb} \\
+        > databases/uniprot/${IDa}2uniprot2${IDb}.tsv
+    """
+
+}
+
+
+/*
+3-fields tab-delimited file
+
+provides mapping in this order:
+
+IDa --->  UniProt AC ---> IDb
+
+all ids of nomenclature IDa are mapped to the corresponding UniProt ACs,
+and the UniProt ACs are then mapped to the corresponding ids of nomenclature
+IDb. For example, all ENSP ids are mapped to their UniProt AC. Then, each of
+the UniProt AC identifiers is mapped to HGNC ids.
+
+.META:
+1. IDa
+2. UniProt AC referred to IDa
+3. IDb referred to UniProt AC
+*/
+process IDa2uniprot2IDb_vec {
+
+    publishDir "${out_dir}",
+                pattern: "databases/uniprot/${IDa}2uniprot2${IDb}.tsv",
+                mode: 'copy'
+
+    input:
+        path 'input/mapping.tsv'
+        val IDa
+        val IDb
+
+    output:
+        path "databases/uniprot/${IDa}2uniprot2${IDb}.tsv"
+
+    script:
+    """
+    mkdir -p databases/uniprot
+
+    grep -w -f <(echo -e "${IDa}\\n${IDb}") \\
+        < input/mapping.tsv \\
+        | gzip > mapping.tsv.gz
+
+    IDa2uniprot2IDb_vec.py \\
+        mapping.tsv.gz \\
+        ${IDa} \\
+        ${IDb} \\
+        > databases/uniprot/${IDa}2uniprot2${IDb}.tsv
     """
 
 }

@@ -246,3 +246,51 @@ process get_reactome_genes {
     """
 
 }
+
+
+/*
+get reactome signalling-specific, unweighted genes
+*/
+process make_translate_reactome_edges {
+
+    publishDir "${out_dir}",
+            pattern: 'databases/pathwaycommons/reactome/*.tsv.gz',
+            mode: 'copy'
+
+    input:
+        path 'input/edges.sif.gz'
+        path 'input/dict.tsv'
+
+    output:
+        path 'databases/pathwaycommons/reactome/edges_translated.tsv.gz'
+
+    shell:
+    """
+    mkdir -p databases/pathwaycommons/reactome
+
+    zcat input/edges.sif.gz \\
+        | cut -f1,3 | sort -u \\
+        | grep -v -f <(echo -e ":") \\
+        > databases/pathwaycommons/reactome/edges.tsv
+
+    tr_fast.py \\
+        input/dict.tsv \\
+        databases/pathwaycommons/reactome/edges.tsv \\
+        1 \\
+        3 \\
+        1,2 \\
+        1 \\
+        > databases/pathwaycommons/reactome/edges_translated_wo_header.tsv 
+
+    cat \\
+        <(echo -e "source\ttarget") \\
+        databases/pathwaycommons/reactome/edges_translated_wo_header.tsv \\
+        | gzip > databases/pathwaycommons/reactome/edges_translated.tsv.gz 
+
+    cat \\
+        <(echo -e "source\ttarget") \\
+        databases/pathwaycommons/reactome/edges.tsv \\
+        | gzip > databases/pathwaycommons/reactome/edges_translated.tsv.gz
+    """
+
+}

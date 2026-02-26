@@ -58,6 +58,7 @@ process dl_human_ids {
 
 }
 
+
 /*
 filter the UniProt id mapping information to only incude mapping to:
 
@@ -95,6 +96,48 @@ process filter_idmapping {
     """
 
 }
+
+
+/*
+filter the UniProt id mapping information to only incude mapping to:
+
+Gene_Name
+GeneID
+Ensembl
+Gene_Synonym
+
+NOTE: Ensembl gets truncated e.g. ENSG00000281151.2 --> ENSG00000281151
+*/
+process process_idmapping {
+
+    publishDir "${out_dir}",
+                pattern: 'databases/uniprot/idmapping.tsv',
+                mode: 'copy'
+
+    input:
+        path 'input/HUMAN_9606_idmapping.dat.gz'
+
+    output:
+        path 'databases/uniprot/idmapping.tsv'
+
+    script:
+    """
+    mkdir -p databases/uniprot
+
+    echo -e "Gene_Name\\nGeneID\\nEnsembl\\nGene_Synonym\\nEnsembl_PRO" \\
+        > idtypes.txt
+
+    zcat input/HUMAN_9606_idmapping.dat.gz \\
+        | grep -w -f idtypes.txt \\
+        | awk '{split(\$1, a, "-"); print a[1]"\\t"\$2"\\t"\$3}' \\
+        | sed -r 's/(Ensembl\\tENSG[0-9]+)\\.[0-9]+\$/\\1/' \\
+        | sed -r 's/(Ensembl_PRO\\tENSP[0-9]+)\\.[0-9]+\$/\\1/' \\
+        | sed -r 's/(UniProtKB-ID\\t[0-9A-Z]+)_HUMAN\$/\\1/' \\
+        > databases/uniprot/idmapping.tsv
+    """
+
+}
+
 
 /*
 define list of reference primary gene names for the human reference proteome
@@ -152,6 +195,7 @@ process translate_ids {
         path 'input/ptmdb_genes.txt'
         path 'input/proteomehd_genes.txt'
         path 'input/mitchell2023_genes.txt'
+        path 'input/lopit2025_genes.txt'
         path 'input/reactome_genes.txt'
 
     output:
@@ -174,6 +218,7 @@ process translate_ids {
         input/ptmdb_genes.txt \
         input/proteomehd_genes.txt \
         input/mitchell2023_genes.txt \
+        input/lopit2025_genes.txt \
         input/metabolism_genes.txt \
         input/reactome_genes.txt \
         ${params.starmap_n_proc} \
@@ -532,4 +577,20 @@ process viz_ref_genes_coverage {
         databases/uniprot/missing_heatmap.pdf \
         databases/uniprot/missing_dendrogram.pdf
     """
+}
+
+
+workflow Gene_Synonym__2__Gene_Name {
+
+    take:
+        uniprot_id_dict
+
+    main:
+        dict = IDa2uniprot2IDb( uniprot_id_dict,
+                                'Gene_Synonym',
+                                'Gene_Name' )
+
+    emit:
+        dict
+
 }

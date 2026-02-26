@@ -16,14 +16,14 @@ include { translatepy_no_pub_rand_id } from './modules/utils'
 include { translate_expand_matrix } from './modules/utils'
 include { translate_expand_pairs } from './modules/utils'
 include { translate_expand_list } from './modules/utils'
-include { publish } from './modules/utils'
+include { publish; publish as _publish; publish as publish_ } from './modules/utils'
 include { split } from './modules/utils'
 include { concatenate } from './modules/utils'
+include { IDa2uniprot2IDb } from './modules/utils'
+include { IDa2uniprot2IDb_vec } from './modules/utils'
 
-include { dl_pc13_intact } from './modules/pathwaycommons'
-include { unweighted_intact } from './modules/pathwaycommons'
-include { dl_pc13_biogrid } from './modules/pathwaycommons'
-include { unweighted_biogrid } from './modules/pathwaycommons'
+include { dl_pc12_reactome } from './modules/pathwaycommons'
+include { make_translate_reactome_edges } from './modules/pathwaycommons'
 
 include { dl_reactome } from './modules/reactome'
 include { sig_react_ids } from './modules/reactome'
@@ -73,6 +73,15 @@ include { merge_ptmdb_exp } from './modules/ptmdb'
 include { get_ptmdb_genes } from './modules/ptmdb'
 include { ptmdb_featvec } from './modules/ptmdb'
 
+include { dl_lopit2025 } from './modules/lopit2025'
+include { lopit2025_prot_loc_changes } from './modules/lopit2025'
+include { get_lopit2025_genes } from './modules/lopit2025'
+include { lopit2025_featvec } from './modules/lopit2025'
+
+/*include { dl_tahoe_100m } from './modules/tahoe'
+include { dl_tahoe_100m_metadata } from './modules/tahoe'
+include { dl_tahoe_100m_hf } from './modules/tahoe'*/
+
 include { parse_ptmdb_imputed } from './modules/ptmdb_imputed'
 include { get_ptmdb_imputed_genes } from './modules/ptmdb_imputed'
 include { ptmdb_imputed_featvec } from './modules/ptmdb_imputed'
@@ -80,11 +89,13 @@ include { ptmdb_imputed_featvec } from './modules/ptmdb_imputed'
 include { download_essentiality_matrices } from './modules/depmap'
 include { get_depmap_genes } from './modules/depmap'
 include { dependency_featvec } from './modules/depmap'
-
-include { dl_depmap20q4v2 } from './modules/depmap20q4v2'
-include { parse_depmap20q4v2 } from './modules/depmap20q4v2'
-include { covar_norm } from './modules/depmap20q4v2'
-include { get_depmap20q4v2_genes } from './modules/depmap20q4v2'
+include { download_depmap_file_list } from './modules/depmap'
+include { download_depmap_lof_mutations } from './modules/depmap'
+include { download_depmap_gene_dependency } from './modules/depmap'
+include { download_depmap_models_info } from './modules/depmap'
+include { translate_depmap_lof_table } from './modules/depmap'
+include { translate_depmap_dependency_info } from './modules/depmap'
+include { make_seed_list; make_seed_list as make_seed_list_ } from './modules/depmap'
 
 include { download_orthogroups } from './modules/orthogroups2015'
 include { get_orthogroups_genes } from './modules/orthogroups2015'
@@ -94,6 +105,10 @@ include { download_humap3_net } from './modules/humap3'
 include { humap3_table } from './modules/humap3'
 include { get_humap3_genes } from './modules/humap3'
 include { humap3_score } from './modules/humap3'
+
+include { df_string_9606_v12 } from './modules/stringdb'
+include { translate_string } from './modules/stringdb'
+include { filter_and_canonicalize } from './modules/stringdb'
 
 include { get_ubiquitination } from './modules/ubiquitination'
 include { parse_ubiquitination } from './modules/ubiquitination'
@@ -106,6 +121,7 @@ include { interpro } from './modules/uniprot'
 include { length } from './modules/uniprot'
 include { dl_human_ids } from './modules/uniprot'
 include { filter_idmapping } from './modules/uniprot'
+include { process_idmapping } from './modules/uniprot'
 include { get_proteome_genes } from './modules/uniprot'
 include { translate_ids; translate_ids as tr_ids } from './modules/uniprot'
 include { filter_id_dict } from './modules/uniprot'
@@ -154,10 +170,11 @@ include { ubiquitination_features } from './modules/build_network'
 include { dep_features } from './modules/build_network'
 include { orthogroup_features } from './modules/build_network'
 include { humap_features } from './modules/build_network'
+include { lopit2025_features } from './modules/build_network'
 include { compute_edge_features } from './modules/build_network'
 include { compute_edge_weights; compute_edge_weights as metabolism_compute_edge_weights } from './modules/build_network'
 include { concat_edges; metabolism_concat_edges } from './modules/build_network'
-include { edges_tsv_2_parquet } from './modules/build_network'
+include { edges_tsv_2_parquet; edges_tsv_2_parquet as _edges_tsv_2_parquet } from './modules/build_network'
 include { add_edges } from './modules/build_network'
 include { filter_edge_score; metabolism_filter_edge_score } from './modules/build_network'
 include { transform_edge_score; metabolism_transform_edge_score } from './modules/build_network'
@@ -166,6 +183,16 @@ include { gene_adjacency_vector } from './modules/build_network'
 include { correlate_adjacencies } from './modules/build_network'
 include { w_net_stats } from './modules/build_network'
 include { filter_reactome_genes } from './modules/build_network'
+
+include { disparity_filter_prune } from './modules/graph_alg'
+include { plot_parquet_net_stats } from './modules/graph_alg'
+include { cat_pq_graphs } from './modules/graph_alg'
+include { cat_tsv_graphs } from './modules/graph_alg'
+include { rwr_lof; rwr_lof as rwr_lof_; rwr_lof as rwr_lof__ } from './modules/graph_alg'
+include { rwr_lof as rwr_lof___; rwr_lof as rwr_lof____; rwr_lof as rwr_lof_____ } from './modules/graph_alg'
+include { dependency_vs_propagation; dependency_vs_propagation as dependency_vs_propagation_; dependency_vs_propagation as dependency_vs_propagation__ } from './modules/graph_alg'
+include { dependency_vs_propagation as dependency_vs_propagation___; dependency_vs_propagation as dependency_vs_propagation____; dependency_vs_propagation as dependency_vs_propagation_____ } from './modules/graph_alg'
+include { plot_wilcox; plot_wilcox as plot_wilcox_ } from './modules/graph_alg'
 
 
 workflow REACTOME {
@@ -212,6 +239,53 @@ workflow REACTOME {
         hs_sets
         hs_gene_list
                 
+}
+
+
+workflow PATHCOMMS {
+
+    take:
+        dict
+
+    main:
+        reactome_sif = dl_pc12_reactome()
+        reactome_edges_translated = make_translate_reactome_edges( reactome_sif, dict )
+        
+    emit:
+        reactome_edges_translated
+
+}
+
+
+workflow Gene_Synonym__2__Gene_Name {
+
+    take:
+        uniprot_id_dict
+
+    main:
+        dict = IDa2uniprot2IDb( uniprot_id_dict,
+                                'Gene_Synonym',
+                                'Gene_Name' )
+
+    emit:
+        dict
+
+}
+
+
+workflow Ensembl_PRO__2__Gene_Name {
+
+    take:
+        uniprot_id_dict
+
+    main:
+        dict = IDa2uniprot2IDb_vec( uniprot_id_dict,
+                                    'Ensembl_PRO',
+                                    'Gene_Name' )
+
+    emit:
+        dict
+
 }
 
 
@@ -298,6 +372,41 @@ workflow PTMDB {
 }
 
 
+/*workflow TAHOE {
+
+    main:
+        // download from google cloud
+        //h5ad_paths = dl_tahoe_100m()
+        //metadata = dl_tahoe_100m_metadata()
+
+        // download from hugging face
+        dl_tahoe_100m_hf()
+
+        
+}*/
+
+
+workflow LOPIT2025 {
+
+    main:
+        // download lopit2025 dataset
+        //lopit2025 = dl_lopit2025()
+
+        // build protein localization changes dataset
+        lopit2025_xlsx = Channel.fromPath( "${lopit2025_xlsx_path}" )
+        table = lopit2025_prot_loc_changes( lopit2025_xlsx )
+
+        // get list of entries (accessions)
+        gene_list = get_lopit2025_genes( table )
+
+
+    emit:
+        table
+        gene_list
+
+}
+
+
 workflow PTMDB_IMPUTED {
 
     main:
@@ -320,9 +429,19 @@ workflow DEPENDENCY {
         dependency = download_essentiality_matrices()
         gene_list = get_depmap_genes( dependency.CRISPRcleanR_FC )
         matrix = dependency.CRISPRcleanR_FC
+        
+        // get cell line metadata and info from DepMap Portal
+        files_meta = download_depmap_file_list()
+        lof_mutations = download_depmap_lof_mutations( files_meta )
+        crispr_dependency = download_depmap_gene_dependency( files_meta )
+        models = download_depmap_models_info( files_meta )   
+ 
     emit:
         matrix
         gene_list
+        lof_mutations
+        crispr_dependency
+        models
 
 }
 
@@ -375,36 +494,37 @@ workflow HUMAP3 {
 }
 
 
+workflow STRING {
+
+    take:
+        dict
+
+    main:
+        edges = df_string_9606_v12()
+        edges = translate_string( edges, dict )
+        edges = filter_and_canonicalize( edges )
+        
+    emit:
+        edges
+
+}
+
+
 workflow UNIPROT {
 
     main:
         ref_prot = dl_ref_proteome()
         idmapping_all = dl_human_ids()
         idmapping = filter_idmapping( idmapping_all )
+        idmapping_p = process_idmapping( idmapping_all )
         uniprot2gene_name_and_synonym_dict = uniprot2gene_name_and_synonym( idmapping_all )
         gene_list = get_proteome_genes( ref_prot )
 
     emit:
+        idmapping_p
         idmapping
         gene_list
         uniprot2gene_name_and_synonym_dict
-}
-
-
-workflow IVKAPHE {
-
-    // Get IV-KAPhE kinase-phosphosite association scores
-    
-    main:
-        net = download_ivkaphe_net()
-        table = ivkaphe_table( net )
-        table = ivkaphe_round( table )
-        gene_list = get_ivkaphe_genes( net )
-
-    emit:
-        table
-        gene_list
-
 }
 
 
@@ -443,6 +563,7 @@ workflow MAP_IDS {
         ptmdb_genes
         proteomehd_genes
         mitchell2023_genes
+        lopit2025_genes
         all_reactome_genes
 
     main:
@@ -460,6 +581,7 @@ workflow MAP_IDS {
                                     ptmdb_genes,
                                     proteomehd_genes,
                                     mitchell2023_genes,
+                                    lopit2025_genes,
                                     all_reactome_genes )
 
         viz_ref_genes_coverage( unfiltered )
@@ -543,6 +665,25 @@ workflow FILTER_MITCHELL2023 {
         id = Channel.from('mitchell2023')
         tr_input = id.combine(target_matrix)
         f_matrix = translate_expand_matrix(tr_input, dict, dict_col )
+
+    emit:
+        f_matrix
+
+}
+
+
+workflow FILTER_LOPIT2025 {
+
+    take:
+        matrix
+        dict
+        dict_col
+
+    main:
+        target_matrix = filter_data_matrix_rows(matrix, dict, dict_col)
+        id = Channel.from('lopit2025')
+        tr_input = id.combine(target_matrix)
+        f_matrix = translatepy(tr_input, dict, dict_col )
 
     emit:
         f_matrix
@@ -765,6 +906,7 @@ workflow GENERATE_EXAMPLES {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap3_m
+        f_lopit2025_m
 
     main:
         // generate training data
@@ -826,7 +968,10 @@ workflow GENERATE_EXAMPLES {
         humap3_score_input = examples.combine( f_humap3_m )
         humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
-        
+        // build features from lopit`2025
+        lopit2025_featvec_input = examples.combine( f_lopit2025_m )
+        lopit2025_featvec_ch = lopit2025_featvec( lopit2025_featvec_input )
+                                    .collect()
         // join features together
         dataset = features_tables( eprot_featvec_ch,
                                    proteomehd_featvec_ch,
@@ -836,7 +981,8 @@ workflow GENERATE_EXAMPLES {
                                    dependency_featvec_ch,
                                    ubiquitination_featvec_ch,
                                    orthogroup_featvec_ch,
-                                   humap3_score_ch )/*,
+                                   humap3_score_ch,
+                                   lopit2025_featvec_ch )/*,
                                    ivkaphe_featvec_ch*/
 
         features_pca( dataset )
@@ -881,6 +1027,8 @@ workflow GENERATE_EXAMPLES_METABOLISM {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap3_m
+        f_lopit2025_m
+        
 
     main:
         // generate training data
@@ -943,6 +1091,11 @@ workflow GENERATE_EXAMPLES_METABOLISM {
         humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
         
+        // build features from lopit2025
+        lopit2025_featvec_input = examples.combine( f_lopit2025_m )
+        lopit2025_featvec_ch = lopit2025_featvec( lopit2025_featvec_input )
+                                    .collect()
+
         // join features together
         dataset = features_tables_metabolism( eprot_featvec_ch,
                                               proteomehd_featvec_ch,
@@ -952,7 +1105,8 @@ workflow GENERATE_EXAMPLES_METABOLISM {
                                               dependency_featvec_ch,
                                               ubiquitination_featvec_ch,
                                               orthogroup_featvec_ch,
-                                              humap3_score_ch )
+                                              humap3_score_ch,
+                                              lopit2025_featvec_ch )
 
         features_pca_metabolism( dataset )
         
@@ -998,6 +1152,7 @@ workflow GENERATE_EXAMPLES_BERNETT2024 {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap3_m
+        f_lopit2025_m
 
     main:
         // concatenate all gene pairs and split them in chunks
@@ -1053,6 +1208,11 @@ workflow GENERATE_EXAMPLES_BERNETT2024 {
         humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
 
+        // build features from lopit2025
+        lopit2025_featvec_input = examples.combine( f_lopit2025_m )
+        lopit2025_featvec_ch = lopit2025_featvec( lopit2025_featvec_input )
+                                    .collect()
+        
         // join features together
         dataset = bernett2024_features_tables( eprot_featvec_ch,
                                                proteomehd_featvec_ch,
@@ -1062,7 +1222,8 @@ workflow GENERATE_EXAMPLES_BERNETT2024 {
                                                ubiquitination_featvec_ch,
                                                dependency_featvec_ch,
                                                orthogroup_featvec_ch,
-                                               humap3_score_ch )
+                                               humap3_score_ch,
+                                               lopit2025_featvec_ch )
 
         bernett2024_features_pca( dataset )
 
@@ -1326,6 +1487,7 @@ workflow BUILD_NETWORK {
         f_ptmdb_m
         f_ubiquitination_m
         f_humap_m
+        f_lopit2025_m
         gene_list
         pos_edges
         model
@@ -1377,6 +1539,10 @@ workflow BUILD_NETWORK {
         // humap features
         humap_features_input = gene_pairs.combine( f_humap_m )
         humap_features = humap_features( humap_features_input )
+
+        // lopit2025 features
+        lopit2025_features_input = gene_pairs.combine( f_lopit2025_m )
+        lopit2025_features = lopit2025_features( lopit2025_features_input )
         
         // join all features together, by gene pairs chunk's UUID
         edges_features_input = eprot_features
@@ -1388,6 +1554,7 @@ workflow BUILD_NETWORK {
                                     .join( orthogroup_features )
                                     .join( ubiquitination_features )
                                     .join( humap_features )
+                                    .join( lopit2025_features )
 
         // compute edges of the protverse
         edges_features = compute_edge_features( edges_features_input )
@@ -1400,7 +1567,8 @@ workflow BUILD_NETWORK {
                                     .map{file -> tuple( file.baseName, file )}
 
         // export edges in parquet
-        /*TMPedges_parquet = edges_tsv_2_parquet( edges_unfiltered )TMP*/
+        edges_parquet = edges_tsv_2_parquet( edges_unfiltered )
+        publish(edges_parquet, "wcsn/edges.parquet")
 
         // generate chunks of gene lists
         /*ref_genes = get_ref_genes( gene_list, 64 ).flatMap().map{it -> it}
@@ -1433,10 +1601,13 @@ workflow BUILD_NETWORK {
         /*edges_reactome_genes = filter_reactome_genes( edges,
                                                       gene_list )*/
 
-        // metabolic model edges
+        // metabolism model edges
         metabolism_edges_chunks = metabolism_compute_edge_weights( edges_features,
                                                                    metabolic_model )
         metabolism_edges_unfiltered = metabolism_concat_edges( metabolism_edges_chunks.collect() )
+        // export metabolic edges to parquet
+        metabolism_edges_parquet = _edges_tsv_2_parquet( metabolism_edges_unfiltered )
+        _publish(edges_parquet, "wcmn/edges.parquet")
         // filter edge score (this generates "wcmn/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv")
         metabolism_edges_filtered = metabolism_filter_edge_score( metabolism_edges_unfiltered )
         // transform edge score (this generates "wcmn/edges_${params.wholecellnet_edge_min_threshold}minScore_transformed.tsv")
@@ -1445,10 +1616,117 @@ workflow BUILD_NETWORK {
 
     emit:
         edges
-        //edges_parquet
+        edges_parquet
+        metabolism_edges_parquet
         //edges_reactome_genes
         metabolism_edges
 
+}
+
+
+workflow DISPARITY_FILTER_WCSN {
+
+    take:
+        edges_parquet
+
+    main:
+        // prune network
+        edges_pruned_parquet = disparity_filter_prune( edges_parquet )
+        publish( edges_pruned_parquet, 'wcsn/edges_pruned.tsv')
+
+        // plot network stats
+        //plot_parquet_net_stats( edges_pruned_parquet, "wcsn")
+    
+    emit:
+        edges_pruned_parquet
+
+}
+
+
+workflow DISPARITY_FILTER_WCMN {
+
+    take:
+        edges_parquet
+
+    main:
+        // prune network
+        edges_pruned_parquet = disparity_filter_prune( edges_parquet )
+        publish( edges_pruned_parquet, 'wcmn/edges_pruned.tsv')
+
+        // plot network stats
+        //plot_parquet_net_stats( edges_pruned_parquet, "wcmn")
+
+    emit:
+        edges_pruned_parquet
+
+}
+
+
+workflow NET_PROPAGATION {
+
+    take:
+        wcsn_filtered_pq
+        wcmn_filtered_pq
+        depmap_lof_table
+        depmap_dependency_table
+        depmap_models_table
+        dict
+        string_tsv
+        pc12_reactome_tsv
+
+    main:
+        // add edges from signalling and metabolism networks
+        graph_tsv = cat_tsv_graphs( wcsn_filtered_pq, wcmn_filtered_pq )
+
+        // translate gene identifiers
+        depmap_lof_table = translate_depmap_lof_table( depmap_lof_table, dict )
+        depmap_dependency_table = translate_depmap_dependency_info( depmap_dependency_table, dict )
+        
+        // lof allele dosage >=2
+        // run propagation of lof mutation for each model
+        lof_seeds = make_seed_list( depmap_lof_table, 2 )
+                        .flatMap()
+                        .map{file -> tuple( file.baseName, file )}
+
+        rwr_lof_protverse = rwr_lof( graph_tsv, lof_seeds )
+
+        rwr_lof_string = rwr_lof_( string_tsv, lof_seeds)
+        
+        rwr_lof_reactome = rwr_lof__( pc12_reactome_tsv, lof_seeds)
+
+        // compare gene dependency and propagation scores
+        wilcox_protverse = dependency_vs_propagation( rwr_lof_protverse, depmap_dependency_table )
+                              .collect()
+        wilcox_string = dependency_vs_propagation_( rwr_lof_string, depmap_dependency_table )
+                              .collect()
+        wilcox_reactome = dependency_vs_propagation__( rwr_lof_reactome, depmap_dependency_table )
+                              .collect()
+        plot_wilcox_2_pdf = plot_wilcox( wilcox_protverse, wilcox_string, wilcox_reactome )
+        publish(plot_wilcox_2_pdf, "rwr_vs_dependency/wilcox/2lof_p_QQ.pdf")
+
+        // lof allele dosage >=1
+        // run propagation of lof mutation for each model
+        lof_seeds = make_seed_list_( depmap_lof_table, 1 )
+                        .flatMap()
+                        .map{file -> tuple( file.baseName, file )}
+        
+        rwr_lof_protverse = rwr_lof___( graph_tsv, lof_seeds )
+
+        rwr_lof_string = rwr_lof____( string_tsv, lof_seeds)
+        
+        rwr_lof_reactome = rwr_lof_____( pc12_reactome_tsv, lof_seeds)
+
+        // compare gene dependency and propagation scores
+        wilcox_protverse = dependency_vs_propagation___( rwr_lof_protverse, depmap_dependency_table )
+                              .collect()
+        wilcox_string = dependency_vs_propagation____( rwr_lof_string, depmap_dependency_table )
+                              .collect()
+        wilcox_reactome = dependency_vs_propagation_____( rwr_lof_reactome, depmap_dependency_table )
+                              .collect()
+        plot_wilcox_2_pdf = plot_wilcox_( wilcox_protverse, wilcox_string, wilcox_reactome )
+        publish_(plot_wilcox_2_pdf, "rwr_vs_dependency/wilcox/1lof_p_QQ.pdf")
+
+        
 }
 
 
@@ -1465,19 +1743,29 @@ workflow PUBLISH_CONFIG {
 
 workflow {
 
+    // Generate id mapping dictionaries through UniProt
+    uniprot = UNIPROT()
+    Gene_Synonym_2_Gene_Name__dict = Gene_Synonym__2__Gene_Name( uniprot.idmapping ) 
+    Ensembl_PRO_2_Gene_Name_dict = Ensembl_PRO__2__Gene_Name( uniprot.idmapping_p )
+
+    
     // Get gene interaction and omics data from external sources
     reactome = REACTOME()
     gtex = GTEX()
     eprot = EPROT()
     mitchell2023 = MITCHELL2023()
     dependency = DEPENDENCY()
-    ptmdb = PTMDB() // edit create_gene_dict.py if switching to imputed ptmdb
+    ptmdb = PTMDB()
+    //tahoe = TAHOE()
+    lopit2025 = LOPIT2025()
     orthogroup = ORTHOGROUPS()
     ubiquitination = UBIQUITINATION()
     humap3 = HUMAP3()
     proteomehd = PROTEOMEHD()
-    uniprot = UNIPROT()
+    string = STRING( Ensembl_PRO_2_Gene_Name_dict )
+    pc12_reactome = PATHCOMMS( Gene_Synonym_2_Gene_Name__dict )
 
+    
     // Get gene id translations
     id_dict = MAP_IDS( 
         uniprot.gene_list,
@@ -1493,6 +1781,7 @@ workflow {
         ptmdb.gene_list,
         proteomehd.gene_list,
         mitchell2023.gene_list,
+        lopit2025.gene_list,
         reactome.hs_gene_list
     )
 
@@ -1525,6 +1814,9 @@ workflow {
     f_mitchell2023_m = FILTER_MITCHELL2023( mitchell2023.matrix,
                                             id_dict.unfiltered,
                                             'mitchell2023' )
+    f_lopit2025_m = FILTER_LOPIT2025( lopit2025.table,
+                                id_dict.unfiltered,
+                                'lopit2025' )
     f_dependency_m = FILTER_DEPENDENCY( dependency.matrix,
                                         id_dict.unfiltered,
                                         'depmap' )
@@ -1558,9 +1850,8 @@ workflow {
         orthogroup.pcs,
         f_ptmdb_m,
         f_ubiquitination_m,
-        f_humap3_m/*,
-        //f_ivkaphe_m,
-        ivkaphe_kinases*/
+        f_humap3_m,
+        f_lopit2025_m
     )
 
 
@@ -1579,7 +1870,8 @@ workflow {
         orthogroup.pcs,
         f_ptmdb_m,
         f_ubiquitination_m,
-        f_humap3_m
+        f_humap3_m,
+        f_lopit2025_m
     )
 
 
@@ -1597,6 +1889,7 @@ workflow {
         f_ptmdb_m,
         f_ubiquitination_m,
         f_humap3_m,
+        f_lopit2025_m
     )
 
 
@@ -1672,12 +1965,27 @@ workflow {
         f_ptmdb_m,
         f_ubiquitination_m,
         f_humap3_m,
+        f_lopit2025_m,
         id_dict.unfiltered,
         pos_edges,
         signalling_model,
         metabolic_model
     )
 
+
+    // prune nets using disparity filter
+    wcsn_filtered_pq = DISPARITY_FILTER_WCSN( protverse.edges_parquet )
+    wcmn_filtered_pq = DISPARITY_FILTER_WCMN( protverse.metabolism_edges_parquet )
+    
+    // perform network propagation with DepMap data (seeds are lof genes)
+    NET_PROPAGATION( wcsn_filtered_pq,
+                     wcmn_filtered_pq,
+                     dependency.lof_mutations,    
+                     dependency.crispr_dependency,
+                     dependency.models,
+                     Gene_Synonym_2_Gene_Name__dict,
+                     string,
+                     pc12_reactome )
 
     // save nextflow.config 
     PUBLISH_CONFIG()

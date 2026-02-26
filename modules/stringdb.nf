@@ -2,6 +2,93 @@
 
 nextflow.enable.dsl=2
 
+
+process df_string_9606_v12 {
+
+    publishDir "${out_dir}",
+        pattern: "databases/string/*.tsv.gz",
+        mode: 'copy'
+
+    output:
+        path "databases/string/*.tsv.gz"
+
+    script:
+    """
+    mkdir -p databases/string
+    
+    curl ${params.url_string_9606_v12} --output 9606.protein.links.v12.0.txt.gz 
+    
+    zcat 9606.protein.links.v12.0.txt.gz \\
+        | sed 's/9606\\.//g' | sed '1d' | gzip \\
+        > databases/string/string_9606_v12.tsv.gz 
+    """
+
+}
+
+
+process translate_string {
+
+     publishDir "${out_dir}",
+        pattern: "databases/string/*.tsv.gz",
+        mode: 'copy'
+
+    input:
+        path "input/target.tsv.gz"
+        path "input/dict.tsv"
+
+    output:
+        path "databases/string/string_9606_v12_translated.tsv.gz"
+
+    script:
+    """
+    mkdir -p databases/string
+
+    zcat input/target.tsv.gz \\
+        | sed 's/ /\\t/g' \\
+        > target.tsv
+
+    tr_fast.py \\
+        input/dict.tsv \\
+        target.tsv \\
+        2 \\
+        3 \\
+        1,2 \\
+        0 \\
+        | gzip > databases/string/string_9606_v12_translated.tsv.gz
+    """   
+
+}
+
+
+process filter_and_canonicalize {
+
+     publishDir "${out_dir}",
+        pattern: "databases/string/*.tsv",
+        mode: 'copy'
+
+    input:
+        path "input/edges.tsv.gz"
+
+    output:
+        path "databases/string/string_9606_v12_score700_canonicalized.tsv"
+
+    script:
+    """
+    mkdir -p databases/string
+
+    cat \\
+        <(echo -e "source\\ttarget\\tscore") \\
+        <(zcat input/edges.tsv.gz | awk '\$3>=700') \\
+        > edges.tsv
+
+    canonicalize_edges.py \\
+        edges.tsv \\
+        | gzip > databases/string/string_9606_v12_score700_canonicalized.tsv
+    """   
+
+}
+
+
 /*
 Download STRING full protein network data with scored links between homo
 sapiens proteins (combined score)

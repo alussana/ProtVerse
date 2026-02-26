@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y \
     wget \
     curl \
     zip \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # Create a symbolic link for python
@@ -35,7 +36,7 @@ RUN python3 -m pip install \
     numpy==2.1.3 \
     pandas==2.2.3 \
     dask==2025.2.0 \
-    pyarrow==19.0.0 \
+    pyarrow==23.0.0 \
     scipy==1.15.1 \
     matplotlib==3.10.0 \
     matplotlib-venn==1.1.1 \
@@ -46,4 +47,8 @@ RUN python3 -m pip install \
     xarray==2025.7.1 \
     missingno==0.5.2 \
     xgboost==2.1.4 \
+    gcsfs==2025.9.0 \
+    gsutil==5.35 \
+    huggingface_hub==1.0.0 \
+    datasets==4.5.0 \
     git+https://github.com/gregversteeg/NPEET.git

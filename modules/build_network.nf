@@ -471,6 +471,51 @@ process humap_features {
 
 }
 
+
+/*
+Compute features from cotranslocation data
+
+.META: gene_pairs.tsv
+1   gene 1
+2   gene 2
+
+.META: lopit2025_input_vector.tsv
+1   gene 1
+2   gene 2
+[...]   [features]
+*/
+process lopit2025_features {
+
+    cpus "${params.starmap_n_proc_buildNet}"
+    memory '20G'
+
+    input:
+        tuple val(id),
+              file('input/gene_pairs.tsv'),
+              file('input/lopit2025_table.tsv')
+
+    output:
+        tuple val(id),
+              file('lopit2025_input_vector.tsv')
+              
+    script:
+    """
+    if [ -z "\${PYTHONPATH:-}" ]; then \\
+        export PYTHONPATH="${projectDir}/src"; \\
+    else \\
+        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
+    fi
+
+    lopit2025_features_parallel.py  \
+        input/gene_pairs.tsv \
+        input/lopit2025_table.tsv \
+        ${params.starmap_n_proc_buildNet} \
+        > lopit2025_input_vector.tsv
+    """ 
+
+}
+
+
 /*
 Merge the partial input vectors from each of the databases
 
@@ -496,7 +541,8 @@ process compute_edge_features {
               file('input/dependency.tsv'),
               file('input/orthogroup.tsv'),
               file('input/ubiquitination.tsv'),
-              file('input/humap.tsv')
+              file('input/humap.tsv'),
+              file('input/lopit2025.tsv')
 
     output:
         path "features.tsv"
@@ -577,6 +623,14 @@ process compute_edge_features {
             | awk 'NF{print \$1"_"\$2"\\t"\$0}' | cut -f1,4-) \
         > edges_features/humap.tsv
 
+    cat \
+        <(cat input/lopit2025.tsv | sed -n '1p' | cut -f3- \
+            | awk '{print "index\\t"\$0}') \
+        <(cat input/lopit2025.tsv \
+            | sed '1d' | grep -v "label" \
+            | awk 'NF{print \$1"_"\$2"\\t"\$0}' | cut -f1,4-) \
+        > edges_features/lopit2025.tsv
+
     edges_features.py \
         edges_features/eprot.tsv \
         edges_features/proteomehd.tsv \
@@ -587,6 +641,7 @@ process compute_edge_features {
         edges_features/dependency.tsv \
         edges_features/orthogroup.tsv \
         edges_features/humap.tsv \
+        edges_features/lopit2025.tsv \
         > features.tsv
     """
 

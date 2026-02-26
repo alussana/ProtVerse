@@ -212,7 +212,7 @@ process rwr_lof {
         | sort -u \\
         > nodes.txt
 
-    if grep -F -f input/seeds.txt -q nodes.txt; then
+    if grep -w -F -f input/seeds.txt -q nodes.txt; then
         rwr.py \\
             --edges-has-header \\
             --col-v "source" \\
@@ -268,13 +268,10 @@ process dependency_vs_propagation {
 */
 process plot_wilcox {
 
-    publishDir "${out_dir}",
-        pattern: "rwr_vs_dependency/wilcox/*.pdf",
-        mode: 'copy'
-
     input:
         path "input/protverse/*.tsv"
         path "input/string/*.tsv"
+        path "input/reactome/*tsv"
 
     output:
         path "rwr_vs_dependency/wilcox/*.pdf"
@@ -285,13 +282,13 @@ process plot_wilcox {
 
     cat input/protverse/*tsv | awk 'NF' > U_p_protverse.tsv
     cat input/string/*tsv | awk 'NF' > U_p_string.tsv
+    cat input/reactome/*tsv | awk 'NF' > U_p_reactome.tsv
 
     plot_wilcox.py \\
         U_p_protverse.tsv \\
         U_p_string.tsv \\
+        U_p_reactome.tsv \\
         rwr_vs_dependency/wilcox/
-
-    touch rwr_vs_dependency/wilcox/phony.pdf
     """
 
 }

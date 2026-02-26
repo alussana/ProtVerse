@@ -16,16 +16,14 @@ include { translatepy_no_pub_rand_id } from './modules/utils'
 include { translate_expand_matrix } from './modules/utils'
 include { translate_expand_pairs } from './modules/utils'
 include { translate_expand_list } from './modules/utils'
-include { publish; publish as _publish } from './modules/utils'
+include { publish; publish as _publish; publish as publish_ } from './modules/utils'
 include { split } from './modules/utils'
 include { concatenate } from './modules/utils'
 include { IDa2uniprot2IDb } from './modules/utils'
 include { IDa2uniprot2IDb_vec } from './modules/utils'
 
-include { dl_pc13_intact } from './modules/pathwaycommons'
-include { unweighted_intact } from './modules/pathwaycommons'
-include { dl_pc13_biogrid } from './modules/pathwaycommons'
-include { unweighted_biogrid } from './modules/pathwaycommons'
+include { dl_pc12_reactome } from './modules/pathwaycommons'
+include { make_translate_reactome_edges } from './modules/pathwaycommons'
 
 include { dl_reactome } from './modules/reactome'
 include { sig_react_ids } from './modules/reactome'
@@ -97,7 +95,7 @@ include { download_depmap_gene_dependency } from './modules/depmap'
 include { download_depmap_models_info } from './modules/depmap'
 include { translate_depmap_lof_table } from './modules/depmap'
 include { translate_depmap_dependency_info } from './modules/depmap'
-include { make_seed_list } from './modules/depmap'
+include { make_seed_list; make_seed_list as make_seed_list_ } from './modules/depmap'
 
 include { download_orthogroups } from './modules/orthogroups2015'
 include { get_orthogroups_genes } from './modules/orthogroups2015'
@@ -190,9 +188,11 @@ include { disparity_filter_prune } from './modules/graph_alg'
 include { plot_parquet_net_stats } from './modules/graph_alg'
 include { cat_pq_graphs } from './modules/graph_alg'
 include { cat_tsv_graphs } from './modules/graph_alg'
-include { rwr_lof; rwr_lof as rwr_lof_ } from './modules/graph_alg'
-include { dependency_vs_propagation; dependency_vs_propagation as dependency_vs_propagation_ } from './modules/graph_alg'
-include { plot_wilcox } from './modules/graph_alg'
+include { rwr_lof; rwr_lof as rwr_lof_; rwr_lof as rwr_lof__ } from './modules/graph_alg'
+include { rwr_lof as rwr_lof___; rwr_lof as rwr_lof____; rwr_lof as rwr_lof_____ } from './modules/graph_alg'
+include { dependency_vs_propagation; dependency_vs_propagation as dependency_vs_propagation_; dependency_vs_propagation as dependency_vs_propagation__ } from './modules/graph_alg'
+include { dependency_vs_propagation as dependency_vs_propagation___; dependency_vs_propagation as dependency_vs_propagation____; dependency_vs_propagation as dependency_vs_propagation_____ } from './modules/graph_alg'
+include { plot_wilcox; plot_wilcox as plot_wilcox_ } from './modules/graph_alg'
 
 
 workflow REACTOME {
@@ -239,6 +239,21 @@ workflow REACTOME {
         hs_sets
         hs_gene_list
                 
+}
+
+
+workflow PATHCOMMS {
+
+    take:
+        dict
+
+    main:
+        reactome_sif = dl_pc12_reactome()
+        reactome_edges_translated = make_translate_reactome_edges( reactome_sif, dict )
+        
+    emit:
+        reactome_edges_translated
+
 }
 
 
@@ -1657,6 +1672,7 @@ workflow NET_PROPAGATION {
         depmap_models_table
         dict
         string_tsv
+        pc12_reactome_tsv
 
     main:
         // add edges from signalling and metabolism networks
@@ -1665,27 +1681,52 @@ workflow NET_PROPAGATION {
         // translate gene identifiers
         depmap_lof_table = translate_depmap_lof_table( depmap_lof_table, dict )
         depmap_dependency_table = translate_depmap_dependency_info( depmap_dependency_table, dict )
-
+        
+        // lof allele dosage >=2
         // run propagation of lof mutation for each model
-        lof_seeds = make_seed_list( depmap_lof_table )
+        lof_seeds = make_seed_list( depmap_lof_table, 2 )
                         .flatMap()
                         .map{file -> tuple( file.baseName, file )}
-        
 
         rwr_lof_protverse = rwr_lof( graph_tsv, lof_seeds )
 
         rwr_lof_string = rwr_lof_( string_tsv, lof_seeds)
         
-
+        rwr_lof_reactome = rwr_lof__( pc12_reactome_tsv, lof_seeds)
 
         // compare gene dependency and propagation scores
         wilcox_protverse = dependency_vs_propagation( rwr_lof_protverse, depmap_dependency_table )
                               .collect()
         wilcox_string = dependency_vs_propagation_( rwr_lof_string, depmap_dependency_table )
                               .collect()
-        plot_wilcox( wilcox_protverse, wilcox_string )
-        
+        wilcox_reactome = dependency_vs_propagation__( rwr_lof_reactome, depmap_dependency_table )
+                              .collect()
+        plot_wilcox_2_pdf = plot_wilcox( wilcox_protverse, wilcox_string, wilcox_reactome )
+        publish(plot_wilcox_2_pdf, "rwr_vs_dependency/wilcox/2lof_p_QQ.pdf")
 
+        // lof allele dosage >=1
+        // run propagation of lof mutation for each model
+        lof_seeds = make_seed_list_( depmap_lof_table, 1 )
+                        .flatMap()
+                        .map{file -> tuple( file.baseName, file )}
+        
+        rwr_lof_protverse = rwr_lof___( graph_tsv, lof_seeds )
+
+        rwr_lof_string = rwr_lof____( string_tsv, lof_seeds)
+        
+        rwr_lof_reactome = rwr_lof_____( pc12_reactome_tsv, lof_seeds)
+
+        // compare gene dependency and propagation scores
+        wilcox_protverse = dependency_vs_propagation___( rwr_lof_protverse, depmap_dependency_table )
+                              .collect()
+        wilcox_string = dependency_vs_propagation____( rwr_lof_string, depmap_dependency_table )
+                              .collect()
+        wilcox_reactome = dependency_vs_propagation_____( rwr_lof_reactome, depmap_dependency_table )
+                              .collect()
+        plot_wilcox_2_pdf = plot_wilcox_( wilcox_protverse, wilcox_string, wilcox_reactome )
+        publish_(plot_wilcox_2_pdf, "rwr_vs_dependency/wilcox/1lof_p_QQ.pdf")
+
+        
 }
 
 
@@ -1722,6 +1763,7 @@ workflow {
     humap3 = HUMAP3()
     proteomehd = PROTEOMEHD()
     string = STRING( Ensembl_PRO_2_Gene_Name_dict )
+    pc12_reactome = PATHCOMMS( Gene_Synonym_2_Gene_Name__dict )
 
     
     // Get gene id translations
@@ -1935,14 +1977,15 @@ workflow {
     wcsn_filtered_pq = DISPARITY_FILTER_WCSN( protverse.edges_parquet )
     wcmn_filtered_pq = DISPARITY_FILTER_WCMN( protverse.metabolism_edges_parquet )
     
-    // perform network propagation with DepMap data
+    // perform network propagation with DepMap data (seeds are lof genes)
     NET_PROPAGATION( wcsn_filtered_pq,
                      wcmn_filtered_pq,
                      dependency.lof_mutations,    
                      dependency.crispr_dependency,
                      dependency.models,
                      Gene_Synonym_2_Gene_Name__dict,
-                     string )
+                     string,
+                     pc12_reactome )
 
     // save nextflow.config 
     PUBLISH_CONFIG()

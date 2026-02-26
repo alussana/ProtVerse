@@ -318,6 +318,7 @@ process make_seed_list {
 
     input:
         path 'input/lof_mutations.csv'
+        val n
 
     output:
         path "rwr_lof/seeds/*.txt"
@@ -341,7 +342,7 @@ process make_seed_list {
         echo \${mutations} | tr ' ' '\\n' > seeds_tmp/\${id}.txt; \\
         paste genes.txt seeds_tmp/\${id}.txt > seeds_tmp//\${id}.tsv; \\
         rm seeds_tmp/\${id}.txt; \\
-        awk -F "\\t" '\$2>0{print \$1}' seeds_tmp//\${id}.tsv > rwr_lof/seeds/\${id}.txt; \\
+        awk -F "\\t" '\$2>=${n}{print \$1}' seeds_tmp//\${id}.tsv > rwr_lof/seeds/\${id}.txt; \\
         rm seeds_tmp//\${id}.tsv
         done < mutations.tsv
     """

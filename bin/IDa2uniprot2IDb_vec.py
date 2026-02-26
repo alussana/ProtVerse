@@ -35,11 +35,11 @@ def main():
     id_map = a.merge(b, on="UniProt_AC", how="left")
     id_map["IDb"] = id_map["IDb"].fillna("NA")
 
-    # Your "self-map if IDa appears among IDb words" logic, but vectorized
+    # Self-map if IDa appears among IDb words
     mask = id_map["IDa"].isin(id_map["IDb"])
     id_map.loc[mask, "IDb"] = id_map.loc[mask, "IDa"]
 
-    # Match your output column names/order
+    # Match column names/order
     id_map = id_map.rename(columns={"UniProt_AC": "uniprot"})
     id_map.to_csv(sys.stdout, sep="\t", index=False, header=False)
 

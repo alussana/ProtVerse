@@ -90,7 +90,7 @@ def main():
     background = df.loc[df['Propagation Strength']<=2, "Dependency Probability"].values
 
     if len(propagated) != 0:
-        U, p = mann_whitney_u_test(propagated, background, alternative="greater", method="auto")       
+        U, p = mann_whitney_u_test(propagated, background, alternative="greater", method="auto")
         print(f'{U}\t{p}')
 
     # perform Beta regression

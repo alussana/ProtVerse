@@ -194,6 +194,39 @@ process download_depmap_lof_mutations {
 
 
 /*
+download mutations deemed to be likely cancer drivers
+given the API endopoint file list information
+
+data release DepMap Public 25Q3
+
+*/
+process download_depmap_hotspot_mutations {
+
+    publishDir "${out_dir}",
+                pattern: "databases/depMap/*.csv",
+                mode: 'copy'
+
+    input:
+        path 'input/files.csv'
+
+    output:
+        path 'databases/depMap/hotspot_mutations.csv'
+
+    script:
+    """
+    mkdir -p databases/depMap/
+    
+    url=\$(cat input/files.csv \\
+            | awk -F "," '\$1=="DepMap Public 25Q3"' \\
+            | awk -F "," '\$3=="OmicsSomaticMutationsMatrixHotspot.csv"' \\
+            | awk -F "," '{print \$4}')
+
+    curl "\${url}" > databases/depMap/hotspot_mutations.csv
+    """
+}
+
+
+/*
 download gene dependency probability estimates for all models in the integrated
 gene effect, given the API endopoint file list information
 
@@ -343,6 +376,45 @@ process make_seed_list {
         paste genes.txt seeds_tmp/\${id}.txt > seeds_tmp//\${id}.tsv; \\
         rm seeds_tmp/\${id}.txt; \\
         awk -F "\\t" '\$2>=${n}{print \$1}' seeds_tmp//\${id}.tsv > rwr_lof/seeds/\${id}.txt; \\
+        rm seeds_tmp//\${id}.tsv
+        done < mutations.tsv
+    """
+
+}
+
+
+/*
+only select default lof entries for models
+*/
+process make_seed_list_eq {
+
+    input:
+        path 'input/lof_mutations.csv'
+        val n
+
+    output:
+        path "rwr_lof/seeds/*.txt"
+
+    script:
+    """
+    mkdir -p rwr_lof/seeds
+
+    mkdir -p seeds_tmp
+
+    cat input/lof_mutations.csv \\
+        | sed -n '1p' | cut -d ',' -f 7- | tr ',' '\\n' | awk 'NF' \\
+        > genes.txt
+
+    cat input/lof_mutations.csv \\
+        | awk -F ',' '\$5=="Yes"' \\
+        | sed '1d' | cut -d ',' -f 3,7- | tr ',' '\\t' | awk 'NF' \\
+        > mutations.tsv
+
+    while IFS=\$'\\t' read -r id mutations; do \\
+        echo \${mutations} | tr ' ' '\\n' > seeds_tmp/\${id}.txt; \\
+        paste genes.txt seeds_tmp/\${id}.txt > seeds_tmp//\${id}.tsv; \\
+        rm seeds_tmp/\${id}.txt; \\
+        awk -F "\\t" '\$2==${n}{print \$1}' seeds_tmp//\${id}.tsv > rwr_lof/seeds/\${id}.txt; \\
         rm seeds_tmp//\${id}.tsv
         done < mutations.tsv
     """

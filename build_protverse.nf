@@ -91,11 +91,13 @@ include { get_depmap_genes } from './modules/depmap'
 include { dependency_featvec } from './modules/depmap'
 include { download_depmap_file_list } from './modules/depmap'
 include { download_depmap_lof_mutations } from './modules/depmap'
+include { download_depmap_hotspot_mutations } from './modules/depmap'
 include { download_depmap_gene_dependency } from './modules/depmap'
 include { download_depmap_models_info } from './modules/depmap'
 include { translate_depmap_lof_table } from './modules/depmap'
 include { translate_depmap_dependency_info } from './modules/depmap'
 include { make_seed_list; make_seed_list as make_seed_list_ } from './modules/depmap'
+include { make_seed_list_eq } from './modules/depmap'
 
 include { download_orthogroups } from './modules/orthogroups2015'
 include { get_orthogroups_genes } from './modules/orthogroups2015'
@@ -193,6 +195,7 @@ include { rwr_lof as rwr_lof___; rwr_lof as rwr_lof____; rwr_lof as rwr_lof_____
 include { dependency_vs_propagation; dependency_vs_propagation as dependency_vs_propagation_; dependency_vs_propagation as dependency_vs_propagation__ } from './modules/graph_alg'
 include { dependency_vs_propagation as dependency_vs_propagation___; dependency_vs_propagation as dependency_vs_propagation____; dependency_vs_propagation as dependency_vs_propagation_____ } from './modules/graph_alg'
 include { plot_wilcox; plot_wilcox as plot_wilcox_ } from './modules/graph_alg'
+include { plot_wilcox_empirical_prior } from './modules/graph_alg'
 
 
 workflow REACTOME {
@@ -433,6 +436,7 @@ workflow DEPENDENCY {
         // get cell line metadata and info from DepMap Portal
         files_meta = download_depmap_file_list()
         lof_mutations = download_depmap_lof_mutations( files_meta )
+        hotspot_mutations = download_depmap_hotspot_mutations( files_meta ) 
         crispr_dependency = download_depmap_gene_dependency( files_meta )
         models = download_depmap_models_info( files_meta )   
  
@@ -1695,18 +1699,30 @@ workflow NET_PROPAGATION {
         rwr_lof_reactome = rwr_lof__( pc12_reactome_tsv, lof_seeds)
 
         // compare gene dependency and propagation scores
-        wilcox_protverse = dependency_vs_propagation( rwr_lof_protverse, depmap_dependency_table )
-                              .collect()
-        wilcox_string = dependency_vs_propagation_( rwr_lof_string, depmap_dependency_table )
-                              .collect()
-        wilcox_reactome = dependency_vs_propagation__( rwr_lof_reactome, depmap_dependency_table )
-                              .collect()
-        plot_wilcox_2_pdf = plot_wilcox( wilcox_protverse, wilcox_string, wilcox_reactome )
+        wilcox_protverse_2lof = dependency_vs_propagation( rwr_lof_protverse, depmap_dependency_table )
+                                .collect()
+        wilcox_string_2lof = dependency_vs_propagation_( rwr_lof_string, depmap_dependency_table )
+                                .collect()
+        wilcox_reactome_2lof = dependency_vs_propagation__( rwr_lof_reactome, depmap_dependency_table )
+                                .collect()
+        plot_wilcox_2_pdf = plot_wilcox( wilcox_protverse_2lof, wilcox_string_2lof, wilcox_reactome_2lof )
         publish(plot_wilcox_2_pdf, "rwr_vs_dependency/wilcox/2lof_p_QQ.pdf")
 
         // lof allele dosage >=1
         // run propagation of lof mutation for each model
-        lof_seeds = make_seed_list_( depmap_lof_table, 1 )
+        /*lof_seeds = make_seed_list_( depmap_lof_table, 1 )
+                        .flatMap()
+                        .map{file -> tuple( file.baseName, file )}
+        
+        rwr_lof_protverse = rwr_lof___( graph_tsv, lof_seeds )
+
+        rwr_lof_string = rwr_lof____( string_tsv, lof_seeds)
+        
+        rwr_lof_reactome = rwr_lof_____( pc12_reactome_tsv, lof_seeds)*/
+
+        // lof allele dosage ==1
+        // run propagation of lof mutation for each model
+        lof_seeds = make_seed_list_eq( depmap_lof_table, 1 )
                         .flatMap()
                         .map{file -> tuple( file.baseName, file )}
         
@@ -1716,17 +1732,25 @@ workflow NET_PROPAGATION {
         
         rwr_lof_reactome = rwr_lof_____( pc12_reactome_tsv, lof_seeds)
 
-        // compare gene dependency and propagation scores
-        wilcox_protverse = dependency_vs_propagation___( rwr_lof_protverse, depmap_dependency_table )
-                              .collect()
-        wilcox_string = dependency_vs_propagation____( rwr_lof_string, depmap_dependency_table )
-                              .collect()
-        wilcox_reactome = dependency_vs_propagation_____( rwr_lof_reactome, depmap_dependency_table )
-                              .collect()
-        plot_wilcox_2_pdf = plot_wilcox_( wilcox_protverse, wilcox_string, wilcox_reactome )
-        publish_(plot_wilcox_2_pdf, "rwr_vs_dependency/wilcox/1lof_p_QQ.pdf")
 
-        
+        // compare gene dependency and propagation scores
+        wilcox_protverse_1lof = dependency_vs_propagation___( rwr_lof_protverse, depmap_dependency_table )
+                                .collect()
+        wilcox_string_1lof = dependency_vs_propagation____( rwr_lof_string, depmap_dependency_table )
+                                .collect()
+        wilcox_reactome_1lof = dependency_vs_propagation_____( rwr_lof_reactome, depmap_dependency_table )
+                                .collect()
+        plot_wilcox_1_pdf = plot_wilcox_( wilcox_protverse_1lof, wilcox_string_1lof, wilcox_reactome_1lof )
+        publish_(plot_wilcox_1_pdf, "rwr_vs_dependency/wilcox/1lof_p_QQ.pdf")
+
+        // compare p value distribution shifts between 1lof and 2lof
+        plot_wilcox_empirical_prior( wilcox_protverse_1lof,
+                                     wilcox_protverse_2lof,
+                                     wilcox_string_1lof,
+                                     wilcox_string_2lof,
+                                     wilcox_reactome_1lof,
+                                     wilcox_reactome_2lof )
+
 }
 
 

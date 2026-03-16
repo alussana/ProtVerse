@@ -292,3 +292,48 @@ process plot_wilcox {
     """
 
 }
+
+
+/*
+[...]
+*/
+process plot_wilcox_empirical_prior {
+
+    publishDir "${out_dir}",
+        pattern: "rwr_vs_dependency/wilcox/*.pdf",
+        mode: 'copy'
+
+    input:
+        path "input/protverse_1lof/*.tsv"
+        path "input/protverse_2lof/*.tsv"
+        path "input/string_1lof/*.tsv"
+        path "input/string_2lof/*.tsv"
+        path "input/reactome_1lof/*tsv"
+        path "input/reactome_2lof/*tsv"
+
+    output:
+        path "rwr_vs_dependency/wilcox/*.pdf"
+
+    script:
+    """
+    mkdir -p rwr_vs_dependency/wilcox
+
+    cat input/protverse_1lof/*tsv | awk 'NF' > U_p_protverse_1lof.tsv
+    cat input/string_1lof/*tsv | awk 'NF' > U_p_string_1lof.tsv
+    cat input/reactome_1lof/*tsv | awk 'NF' > U_p_reactome_1lof.tsv
+
+    cat input/protverse_2lof/*tsv | awk 'NF' > U_p_protverse_2lof.tsv
+    cat input/string_2lof/*tsv | awk 'NF' > U_p_string_2lof.tsv
+    cat input/reactome_2lof/*tsv | awk 'NF' > U_p_reactome_2lof.tsv
+
+    plot_wilcox_empirical_prior.py \\
+        U_p_protverse_1lof.tsv \\
+        U_p_protverse_2lof.tsv \\
+        U_p_string_1lof.tsv \\
+        U_p_string_2lof.tsv \\
+        U_p_reactome_1lof.tsv \\
+        U_p_reactome_2lof.tsv \\
+        rwr_vs_dependency/wilcox/
+    """
+
+}

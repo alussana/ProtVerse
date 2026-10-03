@@ -166,16 +166,16 @@ workflow PUBLISH_CONFIG {
 workflow {
 
     // Signalling model graph
-    wcsn = Channel.fromPath("${wcsn_dir}/edges_${params.wholecellnet_edge_min_threshold}minScore_transformed.tsv")
+    wcsn = Channel.fromPath("${params.wcsn_dir}/edges_${params.wholecellnet_edge_min_threshold}minScore_transformed.tsv")
 
 
     // Signalling model graph (Reactome genes only)
-    //wcsn_reactome = Channel.fromPath("${wcsn_dir}/edges_reactomeGenes_${params.wholecellnet_edge_min_threshold}minScore.tsv")
+    //wcsn_reactome = Channel.fromPath("${params.wcsn_dir}/edges_reactomeGenes_${params.wholecellnet_edge_min_threshold}minScore.tsv")
 
 
     // Metabolism model graph
-    wcmn = Channel.fromPath("${wcmn_dir}/edges_${params.wholecellnet_edge_min_threshold}minScore_transformed.tsv")
-    //wcmn = Channel.fromPath("${wcmn_dir}/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv")
+    wcmn = Channel.fromPath("${params.wcmn_dir}/edges_${params.wholecellnet_edge_min_threshold}minScore_transformed.tsv")
+    //wcmn = Channel.fromPath("${params.wcmn_dir}/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv")
 
 
     // Reactome signalling-specific graph from PathwayCommons

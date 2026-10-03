@@ -14,7 +14,7 @@ process run_blant {
     cpus "${params.clusterone_n_cores}"
     memory '20G'
 
-    publishDir "${out_dir}", pattern: "modules/${net}/blant/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "modules/*/*", mode: 'copy'
 
     input:
         tuple val(net),

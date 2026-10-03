@@ -15,7 +15,7 @@ process run_clusterone {
     cpus "${params.clusterone_n_cores}"
     memory '20G'
 
-    publishDir "${out_dir}", pattern: "modules/${net}/clusterone/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "modules/${net}/clusterone/*", mode: 'copy'
 
     input:
         tuple val(net),
@@ -45,7 +45,7 @@ process run_clusterone {
 
 process cl1_modules_stats {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                pattern: "modules/${net}/*.pdf",
                mode: 'copy'
 
@@ -82,7 +82,7 @@ process cl1_modules_stats {
 
 process cl1_joined_modules_stats {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                pattern: "modules/${net}/*.pdf",
                mode: 'copy'
 
@@ -127,7 +127,7 @@ ${params.max_module_size}
 */
 process join_clusters {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                pattern: "modules/${net}/clusters_joined.tsv",
                mode: 'copy'
 
@@ -166,7 +166,7 @@ Build vector of cluster membership for each gene from the ClusterONE output
 */
 process CLUSTER_MEMBERSHIPS {
 
-    publishDir "${out_dir}", pattern: "modules/${net}/clusterone/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "modules/${net}/clusterone/*", mode: 'copy'
 
     input:
         tuple val(net),
@@ -203,7 +203,7 @@ ${params.max_module_size}
 */
 process merge_clusters {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                pattern: "modules/${id1}__${id2}/clusters_merged.tsv",
                mode: 'copy'
 

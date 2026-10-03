@@ -10,7 +10,7 @@ Download Reactome reactions IDs and metadata
 */
 process dl_reactome {
 
-    publishDir "${out_dir}", pattern: "databases/reactome/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "databases/reactome/*", mode: 'copy'
 
     output:
         path 'databases/reactome/ReactomePathways.txt',
@@ -35,7 +35,7 @@ download Reactome_2022 from the EnrichR libraries
 */
 process dl_reactome2022_enrichr {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                pattern: "databases/reactome/*tsv",
                mode: 'copy'
 
@@ -58,8 +58,8 @@ plot modules size distribution etc
 */
 process modules_stats {
 
-    publishDir "${out_dir}",
-               pattern: "modules/${net}/*.pdf",
+    publishDir "${params.out_dir}",
+               saveAs: { "modules/${net}/*.pdf" },
                mode: 'copy'
 
     input:
@@ -96,7 +96,7 @@ Download Reactome pairwise human interactions in tabular format
 */
 process dl_reactome_tab {
 
-    publishDir "${out_dir}", pattern: "databases/reactome/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "databases/reactome/*", mode: 'copy'
 
     output:
         path 'databases/reactome/reactome.homo_sapiens.interactions.psi-mitab.txt'
@@ -116,7 +116,7 @@ Homo sapiens
 */
 process sig_react_ids {
 
-    publishDir "${out_dir}", 
+    publishDir "${params.out_dir}", 
         pattern: "databases/reactome/hs_sig_react_ids.txt",
         mode: 'copy'
 
@@ -157,7 +157,7 @@ Homo sapiens
 */
 process metabolism_react_ids {
 
-    publishDir "${out_dir}", 
+    publishDir "${params.out_dir}", 
         pattern: "databases/reactome/metabolism_hs_react_ids.txt",
         mode: 'copy'
 
@@ -198,7 +198,7 @@ Homo sapiens, which also contain the word "ignal"
 */
 process immune_system_react_ids {
 
-    publishDir "${out_dir}", 
+    publishDir "${params.out_dir}", 
         pattern: "databases/reactome/hs_imm_react_ids.txt",
         mode: 'copy'
 
@@ -308,7 +308,7 @@ NOTE: there can be multiple ENSG IDs mapping to the same UniProt ID
 */
 process uniprot2ensg {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/uniprot2ensg.tsv",
                 mode: 'copy'
 
@@ -410,7 +410,7 @@ process pos_ex_unique_edges {
         path 'input/*'
 
     output:
-        env(n), emit: n
+        env 'n', emit: n
         path 'non_redundant_pos_ex.tsv', emit: edges
 
     script:
@@ -424,6 +424,7 @@ process pos_ex_unique_edges {
     cat dup | awk '{print "1\\tmultiple\\t"\$1"\\t"\$2}' > pos_ex_dup
     cat pos_ex_uniq_only pos_ex_dup | sort | uniq > non_redundant_pos_ex.tsv
     n=\$(cat non_redundant_pos_ex.tsv | wc -l | cut -d " " -f1)
+    export n
     """
 
 }
@@ -493,7 +494,7 @@ to be used in gene set enrichment tests
 */
 process list_terms {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/hs_sig_react_sets.tsv",
                 mode: 'copy'
 
@@ -529,7 +530,7 @@ to be used in gene set enrichment tests
 */
 process metabolism_list_terms {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/metabolism_hs_react_sets.tsv",
                 mode: 'copy'
 
@@ -567,7 +568,7 @@ translation goes from ENSG id to gene symbol
 */
 process translate_tab {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/hs_sig_react_sets_translated.tsv",
                 mode: 'copy'
 
@@ -607,7 +608,7 @@ Signal Transduction Reactome subgraph
 */
 process sig_react_sets_stats {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/hs_sig_react_sets_stats.pdf",
                 mode: 'copy'
 
@@ -642,8 +643,8 @@ translation does not exist, it will be discarded
 */
 process translate_tab_all {
 
-    publishDir "${out_dir}",
-                pattern: "databases/reactome/${sets_name}_translated.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "databases/reactome/${sets_name}_translated.tsv" },
                 mode: 'copy'
 
     input:
@@ -685,7 +686,7 @@ all gene sets for human Reactome
 */
 process hs_react_sets {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/hs_react_sets.tsv",
                 mode: 'copy'
 
@@ -724,7 +725,7 @@ gene list from genes (ENSG) that are annotated in the human reactome
 */
 process hs_gene_list {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/hs_react_genes.txt",
                 mode: 'copy'
 
@@ -750,7 +751,7 @@ process hs_gene_list {
 */
 process signal_transduction_reactome_leaves {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/reactome/signal_transduction_reactome_leaves.tsv",
                 mode: 'copy'
 

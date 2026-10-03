@@ -11,7 +11,7 @@ Ref <https://doi.org/10.1038/s41587-022-01539-0>
 */
 process dl_mitchell2023 {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/mitchell2023/41587_2022_1539_MOESM3_ESM.csv',
             mode: 'copy'
 
@@ -34,7 +34,7 @@ get the list of gene names to be translated
 */
 process get_mitchell2023_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: "databases/mitchell2023/genes.txt",
             mode: 'copy'
 
@@ -69,7 +69,7 @@ NOTE: some gene names are duplicated due to different protein isoforms
 */
 process parse_mitchell2023 {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/mitchell2023/matrix.tsv",
                 mode: 'copy'
 
@@ -117,12 +117,6 @@ process mitchell2023_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     mitchell2023_input_vector.py  \
         input/gene_pairs.tsv \
         input/mitchell2023_table.tsv \

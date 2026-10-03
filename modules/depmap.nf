@@ -11,7 +11,7 @@ Get gene dependencies fold changes computed in
 */
 process download_essentiality_matrices {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*txt",
                 mode: 'copy'
 
@@ -47,7 +47,7 @@ Get the list of gene names in the essentiality matrices to be translated
 */
 process get_depmap_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/genes.txt",
                 mode: 'copy'
 
@@ -95,12 +95,6 @@ process dependency_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     dependency_input_vector.py  \
         input/gene_pairs.tsv \
         input/dependency_table.tsv \
@@ -123,7 +117,7 @@ get available files from the DepMap API endpoint
 */
 process download_depmap_file_list {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 
@@ -168,7 +162,7 @@ data release DepMap Public 25Q3
 */
 process download_depmap_lof_mutations {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 
@@ -182,12 +176,13 @@ process download_depmap_lof_mutations {
     """
     mkdir -p databases/depMap/
     
-    url=\$(cat input/files.csv \\
-            | awk -F "," '\$1=="DepMap Public 25Q3"' \\
-            | awk -F "," '\$3=="OmicsSomaticMutationsMatrixDamaging.csv"' \\
-            | awk -F "," '{print \$4}')
+    url=\$(awk -F "," '\$1=="DepMap Public 25Q3" && \$3=="OmicsSomaticMutationsMatrixDamaging.csv" { print \$4; exit }' input/files.csv | tr -d '\\r')
+    test -n "\${url}"
 
-    curl "\${url}" > databases/depMap/lof_mutations.csv
+    curl --fail --location --silent --show-error "\${url}" \\
+        > databases/depMap/lof_mutations.csv
+
+    test "\$(sed -n '1p' databases/depMap/lof_mutations.csv | grep -c 'ModelID')" -eq 1
     """
 
 }
@@ -202,7 +197,7 @@ data release DepMap Public 25Q3
 */
 process download_depmap_hotspot_mutations {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 
@@ -234,7 +229,7 @@ data release DepMap Public 25Q3
 */
 process download_depmap_gene_dependency {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 
@@ -319,7 +314,7 @@ data release DepMap Public 25Q3
 */
 process download_depmap_models_info {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 
@@ -431,7 +426,7 @@ become:
 */
 process translate_depmap_lof_table {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 
@@ -483,7 +478,7 @@ become:
 */
 process translate_depmap_dependency_info {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/depMap/*.csv",
                 mode: 'copy'
 

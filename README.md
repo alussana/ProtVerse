@@ -28,6 +28,14 @@ Modify `process.executor`, `process.queue`, `workDir`, and `env.out_dir` accordi
 
 ## Run the workflow
 
+Refresh DepMap signed URLs: manually download freshly signed URLs for the DepMap file catalog from:
+
+```bash
+https://depmap.org/portal/api/download/files
+```
+
+and move them to `dataset/depmap/files.csv`.
+
 To build ProtVerse, run the following to gather all the data sources, build the classifiers of signalling, metabolic, and physical interaction, and assemble the proteome-wide interaction graph.
 
 ```bash
@@ -45,4 +53,4 @@ The main output files and figures are saved in `${env.out_dir}`, which can be se
 
 ## Downstream analysis
 
-To assess the biological relevance of ProtVerse protein modules, they have been compared with canonical, manually-curated pathways in their ability to fit cellular responses to perturbations as measured in independent phosphoproteomics data. This evaluation can be accessed at [https://github.com/alussana/ProtVerse-modules-validation](https://github.com/alussana/ProtVerse-modules-validation).
+To further assess the biological relevance of ProtVerse protein modules, they have been compared with canonical, manually-curated pathways in their ability to fit cellular responses to perturbations as measured in independent phosphoproteomics data. This evaluation can be accessed at [https://github.com/alussana/ProtVerse-modules-validation](https://github.com/alussana/ProtVerse-modules-validation).

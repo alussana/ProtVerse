@@ -13,7 +13,7 @@ Download hu.MAP 3.0 data, containing probability scores for
 */
 process download_humap3_net {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/huMAP3/source.tsv.gz',
                 mode: 'copy'
 
@@ -40,7 +40,7 @@ round all probability scores to 4 decimal digits, save in tsv format
 */
 process humap3_table {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/huMAP3/huMAP3_table.tsv',
                 mode: 'copy'
 
@@ -69,7 +69,7 @@ List all genes found in the network
 */
 process get_humap3_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/huMAP3/genes.txt',
                 mode: 'copy'
 

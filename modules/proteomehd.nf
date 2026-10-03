@@ -16,7 +16,7 @@ download 294 SILAC ratios for 10,323 proteins that make up ProteomeHD
 */
 process dl_proteomehd {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/proteomeHD/table_S1.csv",
                 mode: 'copy'
 
@@ -45,7 +45,7 @@ each mapped to a different individual gene name)
 */
 process parse_proteomehd {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/proteomeHD/SILAC_ratios.tsv",
                 mode: 'copy'
 
@@ -71,7 +71,7 @@ get the list of gene names in SILAC ratios matrix to be translated
 */
 process get_proteomehd_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: "databases/proteomeHD/genes.txt",
             mode: 'copy'
 
@@ -119,12 +119,6 @@ process proteomehd_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     proteomehd_input_vector.py  \
         input/gene_pairs.tsv \
         input/proteomehd_table.tsv \

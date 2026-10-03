@@ -18,7 +18,7 @@ NOTE: files contain many duplicated lines
 */
 process open_ptmdb {
 
-    publishDir "${out_dir}", 
+    publishDir "${params.out_dir}", 
                 pattern: "databases/ptmdb/experiments/*.txt",
                 mode: 'copy'
 
@@ -59,8 +59,8 @@ ISSUE: even when not considering phosphosites with no functional score ("NA"),
 */
 process parse_ptmdb {
 
-    publishDir "${out_dir}", 
-                pattern: "databases/ptmdb/parsed/${id}.tsv",
+    publishDir "${params.out_dir}", 
+                saveAs: { "databases/ptmdb/parsed/${id}.tsv" },
                 mode: 'copy'
 
     input:
@@ -103,7 +103,7 @@ process merge_ptmdb_exp {
 
     memory '8G'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/ptmdb/all_logFC.tsv',
                 mode: 'copy'
 
@@ -135,7 +135,7 @@ Get the list of gene names in the ptmdb to be translated
 */
 process get_ptmdb_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/ptmdb/genes.txt',
                 mode: 'copy'
 
@@ -191,12 +191,6 @@ process ptmdb_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     cat input/all_logFC.tsv | sed 's/\\t/_/' > all_logFC.tsv
 
     ptmdb_input_vector.py  \

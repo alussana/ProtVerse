@@ -8,7 +8,7 @@ download KEGG_2021_Human from EnrichR gene sets repository
 */
 process dl_kegg_2021_human {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                pattern: "databases/kegg/KEGG_2021_Human.tsv",
                mode: 'copy'
 

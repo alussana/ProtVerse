@@ -9,7 +9,7 @@ test dataset, after discarding the already existing negative label examples.
 */
 process add_examples {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*.pkl',
                 mode: 'copy'
 
@@ -47,7 +47,7 @@ process rf_omics_predict {
     cpus "${params.rf_n_jobs}"
     memory '32G'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*.pdf',
                 mode: 'copy'
 
@@ -82,7 +82,7 @@ process rf_stringdb_predict {
     cpus "${params.rf_n_jobs}"
     memory '32G'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*.pdf',
                 mode: 'copy'
 

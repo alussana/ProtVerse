@@ -13,7 +13,7 @@ Briefings in Bioinformatics
 */
 process dl_bernett_2024 {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/bernett2024/*',
                 mode: 'copy'
 
@@ -73,7 +73,7 @@ final data point counts are:
 */
 process parse_and_translate_bernett_2024 {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/bernett2024/*',
                 mode: 'copy'
 
@@ -200,7 +200,7 @@ Exclude SREK1_ZRANB2: for unknown reasons it has 4 additional and empty columns
 */
 process bernett2024_features_tables {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024/examples.tsv.gz',
                 mode: 'copy'
 
@@ -347,7 +347,7 @@ Plot PC1,PC2 and PC3,PC4 and PC5,PC6 for features in class 1 and 0 separately
 */
 process bernett2024_features_pca {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'training_bernett2024/*.pdf',
             mode: 'copy'
 
@@ -379,7 +379,7 @@ process bernett2024_features_pca {
 */
 process bernett2024_make_data_splits {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: "training_bernett2024/*.pkl",
             mode: 'copy'
 
@@ -425,7 +425,7 @@ create violin plots of feature distributions splitted by example's class
 */
 process bernett2024_features_distrib {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024/*.pdf',
                 mode: 'copy'
 
@@ -454,18 +454,18 @@ Train and evaluate a Random Forest classifier
 */
 process bernett2024_train_valid_rf {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024/*.pdf',
                 mode: 'copy'
 
     memory '64G'
     cpus "${params.bernett2024_rf_n_jobs}"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024/*.pdf',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024/*.pkl',
                 mode: 'copy'
 
@@ -508,7 +508,7 @@ Train RF models using only indivdual features and plot the ROC and PRC curves
 */
 process bernett2024_train_valid_rf_reduced {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024/*.pdf',
                 mode: 'copy'
 
@@ -549,18 +549,18 @@ Train and evaluate a XGBoost classifier
 */
 process bernett2024_train_valid_xgb {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024_xgb/*.pdf',
                 mode: 'copy'
 
     memory '64G'
     cpus "${params.bernett2024_xgb_n_jobs}"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024_xgb/*.pdf',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024_xgb/*.pkl',
                 mode: 'copy'
 
@@ -604,7 +604,7 @@ Train XGB models using only indivdual sources and plot the ROC and PRC curves
 */
 process bernett2024_xgb_single_source {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_bernett2024_xgb/*.pdf',
                 mode: 'copy'
 

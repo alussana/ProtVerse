@@ -11,15 +11,15 @@ protein-coding genes
 */
 process download_orthogroups {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/orthogroups/hOP_occurrence_matrix.tsv',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/orthogroups/gene_orthogroup_key.tsv',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/orthogroups/PCS_hOPMatrix.tsv',
                 mode: 'copy'
 
@@ -70,7 +70,7 @@ Get the list of reported gene names to be translated
 */
 process get_orthogroups_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/orthogroups/genes.txt',
                 mode: 'copy'
 

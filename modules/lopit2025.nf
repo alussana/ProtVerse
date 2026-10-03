@@ -13,7 +13,7 @@ Ref <https://doi.org/10.1016/j.mcpro.2024.100888>
 */
 process dl_lopit2025 {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/lopit2025/1-s2.0-S1535947624001786-mmc1.xlsx',
             mode: 'copy'
 
@@ -57,7 +57,7 @@ therefore are assumed to be usable for fold change calculation
 */
 process lopit2025_prot_loc_changes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: "databases/lopit2025/lopit2025_prot_loc_changes.tsv",
             mode: 'copy'
 
@@ -84,7 +84,7 @@ build list of genes appearing in the dataset
 */
 process get_lopit2025_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: "databases/lopit2025/gene_list.txt",
             mode: 'copy'
 
@@ -132,12 +132,6 @@ process lopit2025_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     lopit2025_input_vector.py  \
         input/gene_pairs.tsv \
         input/lopit2025_table.tsv \

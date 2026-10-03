@@ -9,8 +9,8 @@ Note: E-PROT-46 not found (https://www.ebi.ac.uk/gxa/experiments/E-PROT-46/Resul
 */
 process download_eprot {
 
-    publishDir "${out_dir}",
-                pattern: "databases/eprot/experiments/e-prot-${ID}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "databases/eprot/experiments/e-prot-${ID}.tsv" },
                 mode: 'copy'
 
     input:
@@ -75,7 +75,7 @@ Note: here the invalid gene id "55872" found in E-PROT-29 is replaced with
 */
 process merge_eprot_exp {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/eprot/all_eprot.tsv",
                 mode: 'copy'
 
@@ -109,7 +109,7 @@ Get the list of gene names in the merged EPROT matrix to be translated
 */
 process get_eprot_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/eprot/genes.txt",
                 mode: 'copy'
 
@@ -158,12 +158,6 @@ process eprot_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     eprot_input_vector.py  \
         input/gene_pairs.tsv \
         input/eprot_table.tsv \

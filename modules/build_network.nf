@@ -62,12 +62,6 @@ process eprot_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     eprot_features_parallel.py  \
         input/gene_pairs.tsv \
         input/eprot_table.tsv \
@@ -106,12 +100,6 @@ process proteomehd_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     proteomehd_features_parallel.py  \
         input/gene_pairs.tsv \
         input/proteomehd_table.tsv \
@@ -149,12 +137,6 @@ process mitchell2023_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     mitchell2023_features_parallel.py  \
         input/gene_pairs.tsv \
         input/mitchell2023_table.tsv \
@@ -193,12 +175,6 @@ process gtex_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     gtex_features_parallel.py  \
         input/gene_pairs.tsv \
         input/gene_tpm.tsv \
@@ -245,12 +221,6 @@ process ptmdb_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     cat input/all_logFC.tsv | sed 's/\t/_/' > all_logFC.tsv
 
     ptmdb_features_parallel.py  \
@@ -291,12 +261,6 @@ process ubiquitination_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     cat input/all_logFC.tsv | sed 's/\t/_/' > all_logFC.tsv
 
     ubiquitination_features_parallel.py  \
@@ -336,12 +300,6 @@ process dep_features {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     dep_features_parallel.py  \
         input/gene_pairs.tsv \
         input/dependency_table.tsv \
@@ -500,12 +458,6 @@ process lopit2025_features {
               
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     lopit2025_features_parallel.py  \
         input/gene_pairs.tsv \
         input/lopit2025_table.tsv \
@@ -684,7 +636,7 @@ concatenate all edges of the wcsn (whole-cell signalling network)
 */
 process concat_edges {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "wcsn/edges.tsv",
                 mode: 'copy'
 
@@ -710,7 +662,7 @@ concatenate all edges of the wcmn (whole-cell metabolic network)
 */
 process metabolism_concat_edges {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "wcmn/edges.tsv",
                 mode: 'copy'
 
@@ -861,8 +813,8 @@ and dividing by 1 - ${params.wholecellnet_edge_min_threshold}
 */
 process filter_edge_score {
 
-    publishDir "${out_dir}",
-                pattern: "wcsn/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "wcsn/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv" },
                 mode: 'copy'
     
     input:
@@ -891,8 +843,8 @@ and dividing by 1 - ${params.wholecellnet_edge_min_threshold}
 */
 process metabolism_filter_edge_score {
 
-    publishDir "${out_dir}",
-                pattern: "wcmn/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "wcmn/edges_${params.wholecellnet_edge_min_threshold}minScore.tsv" },
                 mode: 'copy'
     
     input:
@@ -918,7 +870,7 @@ transform edge scores by applying the specified function
 */
 process transform_edge_score {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "wcsn/*.tsv",
                 mode: 'copy'
     
@@ -945,7 +897,7 @@ transform edge scores by applying the specified function
 */
 process metabolism_transform_edge_score {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "wcmn/*.tsv",
                 mode: 'copy'
     
@@ -974,7 +926,7 @@ weights are set to 1 for all the newly added edges
 */
 process add_edges {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "wcsn/edges_refined_${params.wholecellnet_edge_min_threshold}minScore.tsv",
                 mode: 'copy'
 
@@ -1007,8 +959,8 @@ process w_net_stats {
 
     memory "32G"
 
-    publishDir "${out_dir}",
-                pattern: "net_stats/${id}/edge_weight.pdf",
+    publishDir "${params.out_dir}",
+                saveAs: { "net_stats/${id}/edge_weight.pdf" },
                 mode: 'copy'
 
     input:  
@@ -1036,7 +988,7 @@ both genes are annotated in Reactome
 */
 process filter_reactome_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "wcsn/*.tsv",
                 mode: 'copy'
     

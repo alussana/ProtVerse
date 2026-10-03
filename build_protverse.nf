@@ -204,9 +204,9 @@ workflow REACTOME {
         // Reactome signal transduction data
         reactome = dl_reactome()
 
-        sig_transd_reactome = sig_react_ids( reactome )
+        sig_transd_reactome = sig_react_ids( reactome.pathway_ids, reactome.hierarchy, reactome.uniprot_ids )
         
-        imm_reactome = immune_system_react_ids( reactome )
+        imm_reactome = immune_system_react_ids( reactome.pathway_ids, reactome.hierarchy, reactome.uniprot_ids )
         sig_reactome = concatenate( sig_transd_reactome.concat(imm_reactome).collect() )
         //sig_reactome = concatenate( sig_transd_reactome.collect() )
 
@@ -222,7 +222,7 @@ workflow REACTOME {
         hs_gene_list = hs_gene_list( hs_sets )
 
         // Reactome metabolism data
-        metabolism_reactome = metabolism_react_ids( reactome )
+        metabolism_reactome = metabolism_react_ids( reactome.pathway_ids, reactome.hierarchy, reactome.uniprot_ids )
         metabolism_cofun_uniprot_ids = metabolism_ensembl_react_lists( metabolism_reactome,
                                                                        reactome.uniprot_ids )
         metabolism_cofun_uniprot_ids_collected = metabolism_cofun_uniprot_ids.collect()
@@ -359,7 +359,7 @@ workflow PTMDB {
 
     main:
         // ptmdb phosphoproteomics data
-        zip = channel.fromPath( ptmdb_text_format )
+        zip = channel.fromPath( params.ptmdb_text_format )
         phos_exp = open_ptmdb( zip )
                         .flatMap()
                         .map{ file -> tuple( file.baseName, file ) }
@@ -396,7 +396,7 @@ workflow LOPIT2025 {
         //lopit2025 = dl_lopit2025()
 
         // build protein localization changes dataset
-        lopit2025_xlsx = Channel.fromPath( "${lopit2025_xlsx_path}" )
+        lopit2025_xlsx = Channel.fromPath( "${params.lopit2025_xlsx_path}" )
         table = lopit2025_prot_loc_changes( lopit2025_xlsx )
 
         // get list of entries (accessions)
@@ -410,31 +410,20 @@ workflow LOPIT2025 {
 }
 
 
-workflow PTMDB_IMPUTED {
-
-    main:
-        // ptmdb phosphoproteomics data
-        h5_file = Channel.fromPath( "${ptmdb_imputed_h5}" )
-        matrix = parse_ptmdb_imputed( h5_file )
-        gene_list = get_ptmdb_imputed_genes( matrix )
-
-    emit:
-        matrix
-        gene_list
-
-}
-
-
 workflow DEPENDENCY {
 
     main:
         // Integrated Broad and Sanger CRISPR-KO fold changes
-        dependency = download_essentiality_matrices()
-        gene_list = get_depmap_genes( dependency.CRISPRcleanR_FC )
-        matrix = dependency.CRISPRcleanR_FC
+        //dependency = download_essentiality_matrices()
+        //gene_list = get_depmap_genes( dependency.CRISPRcleanR_FC )
+        //matrix = dependency.CRISPRcleanR_FC
+        CRISPRcleanR_FC = Channel.fromPath( "${params.CRISPRcleanR_FC_path}" )
+        gene_list = get_depmap_genes( CRISPRcleanR_FC )
+        matrix = CRISPRcleanR_FC
         
         // get cell line metadata and info from DepMap Portal
-        files_meta = download_depmap_file_list()
+        //files_meta = download_depmap_file_list()
+        files_meta = Channel.fromPath( "${projectDir}/dataset/depmap/files.csv" )
         lof_mutations = download_depmap_lof_mutations( files_meta )
         hotspot_mutations = download_depmap_hotspot_mutations( files_meta ) 
         crispr_dependency = download_depmap_gene_dependency( files_meta )
@@ -446,21 +435,6 @@ workflow DEPENDENCY {
         lof_mutations
         crispr_dependency
         models
-
-}
-
-
-workflow DEPMAP20Q2V2 {
-
-    main:
-        ceres_scores = dl_DepMap20Q4v2()
-        ceres_scores = parse_DepMap20Q4v2( ceres_scores )
-        gene_list = get_DepMap20Q4v2_genes( ceres_scores )
-        matrix = covar_norm(ceres_scores).X_white
-
-    emit:
-        matrix
-        gene_list
 
 }
 
@@ -537,7 +511,7 @@ workflow UBIQUITINATION {
     // Get ubiquitination data from the source file and parse it
 
     main:
-        source = get_ubiquitination( ubiquitination_data_source )
+        source = get_ubiquitination( "${params.ubiquitination_data_source}" )
         table = parse_ubiquitination( source )
         gene_list = get_ubiquitination_genes( table )
 
@@ -815,35 +789,6 @@ workflow FILTER_UBIQUITINATION {
 }
 
 
-workflow FILTER_IVKAPHE {
-
-    take:
-        matrix
-        dict
-        dict_col
-
-    main:
-        target_matrix = filter_data_matrix_rows(matrix, dict, dict_col)
-        id = Channel.from('ivkaphe')
-        target_matrix_chunks = target_matrix
-                                    .splitText( by: 10000 )
-        tr_input_chunks = id.combine( target_matrix_chunks )
-                            .combine( dict )
-                            .combine( dict_col )
-        f_matrix_chunks = translate_expand_pairs( tr_input_chunks )
-                            .collect()
-        f_matrix_name = Channel.from('ivkaphe.tsv')
-        header = Channel.from('kinase\ttarget\tpos\tivkaphe_score')
-        f_matrix = CONCAT_W_ID( f_matrix_name, f_matrix_chunks, header )
-        kinases = get_ivkaphe_kinases( f_matrix )
-
-    emit:
-        f_matrix
-        kinases
-
-}
-
-
 workflow FILTER_HUMAP3 {
     
     take:
@@ -877,7 +822,8 @@ workflow BERNETT2024 {
         uniprot2gene_name_and_synonym_dict
 
     main:
-        bernett_2024_zip = dl_bernett_2024()
+        //bernett_2024_zip = dl_bernett_2024()
+        bernett_2024_zip = Channel.fromPath( "${params.bernett_2024_zip_path}" )
 
         bernett_2024 = parse_and_translate_bernett_2024( bernett_2024_zip,
                                                          uniprot2gene_name_and_synonym_dict )
@@ -1378,7 +1324,7 @@ workflow FIT_BERNETT2024_SINGLE_SOURCE {
 }
 
 
-workflow ADD_NEG_EXAMPLES {
+/*workflow ADD_NEG_EXAMPLES {
 
     take:
         id_dict
@@ -1392,7 +1338,7 @@ workflow ADD_NEG_EXAMPLES {
         f_ptmdb_m
         f_ivkaphe_m
         ivkaphe_kinases
-        f_humap_m
+        f_humap3_m
         n
         X_test
         y_test
@@ -1448,9 +1394,9 @@ workflow ADD_NEG_EXAMPLES {
         ivkaphe_featvec_ch = ivkaphe_featvec( ivkaphe_featvec_input )
                                 .collect()
 
-        // build features from humap
-        humap_score_input = examples.combine( f_humap_m )
-        humap_score_ch = humap_score( humap_score_input )
+        // build features from humap3
+        humap3_score_input = examples.combine( f_humap_m )
+        humap3_score_ch = humap3_score( humap3_score_input )
                             .collect()
         
         // join features together
@@ -1462,7 +1408,7 @@ workflow ADD_NEG_EXAMPLES {
                                        dependency_featvec_ch,
                                        orthogroup_featvec_ch,
                                        ivkaphe_featvec_ch,
-                                       humap_score_ch )
+                                       humap3_score_ch )
 
         dataset = add_examples( neg_dataset, 
                                 X_test,
@@ -1475,7 +1421,7 @@ workflow ADD_NEG_EXAMPLES {
         X_test
         y_test
 
-}
+}*/
 
 
 workflow BUILD_NETWORK {
@@ -1684,7 +1630,7 @@ workflow NET_PROPAGATION {
 
         // translate gene identifiers
         depmap_lof_table = translate_depmap_lof_table( depmap_lof_table, dict )
-        depmap_dependency_table = translate_depmap_dependency_info( depmap_dependency_table, dict )
+        depmap_dependency_table = translate_depmap_dependency_info( depmap_dependency_table, dict ).first()
         
         // lof allele dosage >=2
         // run propagation of lof mutation for each model

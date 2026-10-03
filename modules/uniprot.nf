@@ -18,7 +18,7 @@ Note: not all entries have at least one gene name
 */
 process dl_ref_proteome {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/uniprot/hs_proteome.tsv.gz',
             mode: 'copy'
 
@@ -42,7 +42,7 @@ process dl_ref_proteome {
 */
 process dl_human_ids {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/HUMAN_9606_idmapping.dat.gz',
                 mode: 'copy'
 
@@ -71,7 +71,7 @@ NOTE: Ensembl gets truncated e.g. ENSG00000281151.2 --> ENSG00000281151
 */
 process filter_idmapping {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/idmapping.tsv',
                 mode: 'copy'
 
@@ -110,7 +110,7 @@ NOTE: Ensembl gets truncated e.g. ENSG00000281151.2 --> ENSG00000281151
 */
 process process_idmapping {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/idmapping.tsv',
                 mode: 'copy'
 
@@ -144,7 +144,7 @@ define list of reference primary gene names for the human reference proteome
 */
 process get_proteome_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/proteome_ref_genes.txt',
                 mode: 'copy'
 
@@ -177,7 +177,7 @@ process translate_ids {
     
     cpus "${params.starmap_n_proc}"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/id_translations.tsv',
                 mode: 'copy'
 
@@ -255,7 +255,7 @@ genes that can be mapped to all the data sources
 */
 process filter_id_dict {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'filtered_data/id_dict.tsv',
                 mode: 'copy'
 
@@ -317,7 +317,7 @@ process name2uniprot2refseq {
 
     conda 'envs/idmapping_pandas.yml'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'uniprot/name2uniprot2refseq.tsv',
                 mode: 'copy'
 
@@ -350,7 +350,7 @@ only for entries having at least one gene name
 */
 process length {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/uniprot/length.tsv',
             mode: 'copy'
 
@@ -385,7 +385,7 @@ only for entries having at least one gene name
 */
 process topo_domain {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/uniprot/topo_domain.tsv.gz',
             mode: 'copy'
 
@@ -422,7 +422,7 @@ only for entries having at least one gene name
 */
 process transmem {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/uniprot/transmem.tsv.gz',
             mode: 'copy'
 
@@ -460,7 +460,7 @@ only for entries having at least one gene name
 */
 process interpro {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/uniprot/interpro.tsv.gz',
             mode: 'copy'
 
@@ -491,7 +491,7 @@ Gene_Synonym
 */
 process uniprot2gene_name_and_synonym {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/uniprot2gene_synonym.tsv',
                 mode: 'copy'
 
@@ -555,7 +555,7 @@ Visualize coverage of reference proteome genes in the different datasets
 */
 process viz_ref_genes_coverage {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/uniprot/*pdf',
                 mode: 'copy'
 
@@ -577,20 +577,4 @@ process viz_ref_genes_coverage {
         databases/uniprot/missing_heatmap.pdf \
         databases/uniprot/missing_dendrogram.pdf
     """
-}
-
-
-workflow Gene_Synonym__2__Gene_Name {
-
-    take:
-        uniprot_id_dict
-
-    main:
-        dict = IDa2uniprot2IDb( uniprot_id_dict,
-                                'Gene_Synonym',
-                                'Gene_Name' )
-
-    emit:
-        dict
-
 }

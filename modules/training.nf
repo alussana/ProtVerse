@@ -88,7 +88,7 @@ Merge the partial input vectors from each of the databases
 */
 process features_tables {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/examples.tsv.gz',
                 mode: 'copy'
 
@@ -253,7 +253,7 @@ Merge the partial input vectors from each of the databases
 */
 process features_tables_metabolism {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/examples_metabolism.tsv.gz',
                 mode: 'copy'
 
@@ -399,7 +399,7 @@ Plot PC1,PC2 and PC3,PC4 and PC5,PC6 for features in class 1 and 0 separately
 */
 process features_pca {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'training/*.pdf',
             mode: 'copy'
 
@@ -430,7 +430,7 @@ Plot PC1,PC2 and PC3,PC4 and PC5,PC6 for features in class 1 and 0 separately
 */
 process features_pca_metabolism {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'training_metabolism/*.pdf',
             mode: 'copy'
 
@@ -462,7 +462,7 @@ frequencies
 */
 process split_dataset {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'training/*.pkl',
             mode: 'copy'
 
@@ -495,7 +495,7 @@ frequencies
 */
 process split_dataset_metabolism {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'training/*.pkl',
             mode: 'copy'
 
@@ -528,7 +528,7 @@ comparing positive and negative labels; generate histograms
 */
 process inspect_examples {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*.pdf',
                 mode: 'copy'
 
@@ -560,7 +560,7 @@ Compute SHAP values on test set and plot beeswarm violin plot
 */
 process shap {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*',
                 mode: 'copy'
 
@@ -593,7 +593,7 @@ calibrate the rf based on the balanced testing set
 */
 process calibrate {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*',
                 mode: 'copy'
 
@@ -627,7 +627,7 @@ process features_distrib {
 
     memory "32G"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*.pdf',
                 mode: 'copy'
 
@@ -658,7 +658,7 @@ process features_distrib_metabolism {
 
     memory "32G"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training/*.pdf',
                 mode: 'copy'
 
@@ -687,18 +687,18 @@ Train and evaluate a XGBoost classifier
 */
 process signalling_train_valid_xgb_bck {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pdf',
                 mode: 'copy'
 
     memory '64G'
     cpus "${params.signalling_xgb_n_jobs}"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pdf',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pkl',
                 mode: 'copy'
 
@@ -744,18 +744,18 @@ Train and evaluate a XGBoost classifier
 */
 process signalling_train_valid_xgb {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pdf',
                 mode: 'copy'
 
     memory '64G'
     cpus "${params.signalling_xgb_n_jobs}"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pdf',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pkl',
                 mode: 'copy'
 
@@ -799,7 +799,7 @@ Train XGB models using only indivdual sources and plot the ROC and PRC curves
 */
 process signalling_xgb_single_source {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_signalling_xgb/*.pdf',
                 mode: 'copy'
 
@@ -842,18 +842,18 @@ Train and evaluate a XGBoost classifier
 */
 process metabolism_train_valid_xgb {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_metabolism_xgb/*.pdf',
                 mode: 'copy'
 
     memory '64G'
     cpus "${params.metabolism_xgb_n_jobs}"
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_metabolism_xgb/*.pdf',
                 mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_metabolism_xgb/*.pkl',
                 mode: 'copy'
 
@@ -897,7 +897,7 @@ Train XGB models using only indivdual sources and plot the ROC and PRC curves
 */
 process metabolism_xgb_single_source {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'training_metabolism_xgb/*.pdf',
                 mode: 'copy'
 

@@ -7,9 +7,9 @@ publish a file giving it an arbitrary path
 */
 process publish {
 
-    publishDir "${out_dir}",
-                pattern: "${outputFile}",
-                mode: 'copy'
+    publishDir "${params.out_dir}",
+            mode: 'copy',
+            saveAs: { "${outputFile}" }
 
     input:
         path 'input/file'
@@ -113,8 +113,8 @@ column
 */
 process translate {
 
-    publishDir "${out_dir}",
-                pattern: "filtered_data/${id}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "filtered_data/${id}.tsv" },
                 mode: 'copy'
 
     input:
@@ -155,8 +155,8 @@ do not discard untranslated rows
 */
 process translatepy {
 
-    publishDir "${out_dir}",
-                pattern: "filtered_data/${id}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "filtered_data/${id}.tsv" },
                 mode: 'copy'
 
     input:
@@ -201,8 +201,8 @@ available translations
 */
 process translate_expand_matrix {
 
-    publishDir "${out_dir}",
-                pattern: "filtered_data/${id}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "filtered_data/${id}.tsv" },
                 mode: 'copy'
 
     input:
@@ -244,8 +244,8 @@ possible combinations of translations
 */
 process translate_expand_pairs {
 
-    publishDir "${out_dir}",
-                pattern: "filtered_data/${id}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "filtered_data/${id}.tsv" },
                 mode: 'copy'
 
     input:
@@ -611,8 +611,8 @@ process concat_w_id {
 
     debug false
 
-    publishDir "${out_dir}",
-                pattern: "filtered_data/${id}",
+    publishDir "${params.out_dir}",
+                saveAs: { "filtered_data/${id}" },
                 mode: 'copy'
 
     input:
@@ -655,8 +655,8 @@ the UniProt AC identifiers is mapped to HGNC ids.
 */
 process IDa2uniprot2IDb {
 
-    publishDir "${out_dir}",
-                pattern: "databases/uniprot/${IDa}2uniprot2${IDb}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "databases/uniprot/${IDa}2uniprot2${IDb}.tsv" },
                 mode: 'copy'
 
     input:
@@ -704,8 +704,8 @@ the UniProt AC identifiers is mapped to HGNC ids.
 */
 process IDa2uniprot2IDb_vec {
 
-    publishDir "${out_dir}",
-                pattern: "databases/uniprot/${IDa}2uniprot2${IDb}.tsv",
+    publishDir "${params.out_dir}",
+                saveAs: { "databases/uniprot/${IDa}2uniprot2${IDb}.tsv" },
                 mode: 'copy'
 
     input:

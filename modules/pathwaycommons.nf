@@ -8,7 +8,7 @@ PathwayCommons <https://www.pathwaycommons.org>
 */
 process dl_pc13_intact {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/PathwayCommons12/intact.hgnc.sif.gz",
                 mode: 'copy'
 
@@ -30,7 +30,7 @@ PathwayCommons <https://www.pathwaycommons.org>
 */
 process dl_pc13_biogrid {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/PathwayCommons12/biogrid.hgnc.sif.gz",
                 mode: 'copy'
 
@@ -55,7 +55,7 @@ obtain unweighted edges from intact interaction data
 */
 process unweighted_intact {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/PathwayCommons12/intact_edges.tsv",
                 mode: 'copy'
 
@@ -84,7 +84,7 @@ obtain unweighted edges from biogrid interaction data
 */
 process unweighted_biogrid {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/PathwayCommons12/biogrid_edges.tsv",
                 mode: 'copy'
 
@@ -130,7 +130,7 @@ download reactome edges in sif format for hgnc nomenclature
 */
 process dl_pc12_reactome {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/pathwaycommons/PathwayCommons12.reactome.hgnc.sif.gz',
             mode: 'copy'
 
@@ -162,11 +162,11 @@ interaction types
 */
 process filter_sig_interactions {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/pathwaycommons/signalling_specific.hgnc.sif.gz',
             mode: 'copy'
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/pathwaycommons/signalling_gene_occurrences.tsv',
             mode: 'copy'
 
@@ -200,7 +200,7 @@ get reactome signalling-specific, unweighted genes
 */
 process get_reactome_sig_edges {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/pathwaycommons/reactome/net.tsv',
             mode: 'copy'
 
@@ -226,7 +226,7 @@ get reactome sif genes
 */
 process get_reactome_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/pathwaycommons/reactome/genes.txt',
             mode: 'copy'
 
@@ -253,7 +253,7 @@ get reactome signalling-specific, unweighted genes
 */
 process make_translate_reactome_edges {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
             pattern: 'databases/pathwaycommons/reactome/*.tsv.gz',
             mode: 'copy'
 

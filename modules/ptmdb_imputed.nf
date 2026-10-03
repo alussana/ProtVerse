@@ -8,7 +8,7 @@ autoencoder with SCVI <https://scvi-tools.org>
 */
 process parse_ptmdb_imputed {
 
-    publishDir "${out_dir}", 
+    publishDir "${params.out_dir}", 
                 pattern: "databases/ptmdb_imputed/ptmdb_imputed.tsv",
                 mode: 'copy'
 
@@ -34,7 +34,7 @@ Get the list of gene names in the ptmdb to be translated
 */
 process get_ptmdb_imputed_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: 'databases/ptmdb_imputed/genes.txt',
                 mode: 'copy'
 

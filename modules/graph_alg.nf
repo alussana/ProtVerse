@@ -51,8 +51,8 @@ process plot_parquet_net_stats {
     memory "${params.adj_dask_memory}"
     cpus "${params.adj_dask_n_proc}"
 
-	publishDir "${out_dir}",
-        pattern: "${id}/*.pdf",
+	publishDir "${params.out_dir}",
+        saveAs: { "${id}/*.pdf" },
         mode: 'copy'
 
     input:
@@ -91,8 +91,8 @@ process plot_tsv_net_stats {
     memory "${params.adj_dask_memory}"
     cpus "${params.adj_dask_n_proc}"
 
-	publishDir "${out_dir}",
-        pattern: "${id}/*.pdf",
+	publishDir "${params.out_dir}",
+        saveAs: { "${id}/*.pdf" },
         mode: 'copy'
 
     input:
@@ -158,7 +158,7 @@ merge two tsv graphs
 */
 process cat_tsv_graphs {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
         pattern: "ProtVerse/*tsv",
         mode: 'copy'
 
@@ -299,7 +299,7 @@ process plot_wilcox {
 */
 process plot_wilcox_empirical_prior {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
         pattern: "rwr_vs_dependency/wilcox/*.pdf",
         mode: 'copy'
 

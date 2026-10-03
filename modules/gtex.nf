@@ -9,7 +9,7 @@ Download median transcripts per million in GTEx tissues
 */
 process download_median_tpm {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/gtex/*gz",
                 mode: 'copy'
 
@@ -30,7 +30,7 @@ Note: In the ENSG names the version (/\..*$/) is truncated
 */
 process parse_median_tpm {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/gtex/median_tpm.tsv",
                 mode: 'copy'
 
@@ -55,7 +55,7 @@ Get the list of gene names in the median TPM matrix to be translated
 */
 process get_gtex_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/gtex/genes.txt",
                 mode: 'copy'
 
@@ -103,12 +103,6 @@ process gtex_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-    
     gtex_input_vector.py  \
         input/gene_pairs.tsv \
         input/gene_tpm.tsv \

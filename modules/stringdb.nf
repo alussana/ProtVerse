@@ -5,7 +5,7 @@ nextflow.enable.dsl=2
 
 process df_string_9606_v12 {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
         pattern: "databases/string/*.tsv.gz",
         mode: 'copy'
 
@@ -28,7 +28,7 @@ process df_string_9606_v12 {
 
 process translate_string {
 
-     publishDir "${out_dir}",
+     publishDir "${params.out_dir}",
         pattern: "databases/string/*.tsv.gz",
         mode: 'copy'
 
@@ -62,7 +62,7 @@ process translate_string {
 
 process filter_and_canonicalize {
 
-     publishDir "${out_dir}",
+     publishDir "${params.out_dir}",
         pattern: "databases/string/*.tsv",
         mode: 'copy'
 
@@ -95,7 +95,7 @@ sapiens proteins (combined score)
 */
 process dl_stringdb_net {
 
-    publishDir "${out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
 
     output:
         path 'databases/stringdb/9606.protein.links.v11.5.txt.gz'
@@ -114,7 +114,7 @@ sapiens proteins (detailed scores)
 */
 process dl_stringdb_net_detailed {
 
-    publishDir "${out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
 
     output:
         path 'databases/stringdb/9606.protein.detailed.links.v11.5.txt.gz'
@@ -140,7 +140,7 @@ Also remove the organism identifier prepended to the ENSP id
 */
 process parse_stringdb {
 
-    publishDir "${out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
 
     input:
         path 'input/stringdb.gz'
@@ -178,7 +178,7 @@ Also remove the organism identifier prepended to the ENSP id
 */
 process parse_stringdb_detailed {
 
-    publishDir "${out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
+    publishDir "${params.out_dir}", pattern: "databases/stringdb/*", mode: 'copy'
 
     input:
         path 'input/stringdb_detailed.gz'

@@ -60,7 +60,7 @@ Publish the ubiquitination data table to the output directory
 */
 process get_ubiquitination {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/ubiquitination/source.tsv",
                 mode: 'copy'
 
@@ -90,7 +90,7 @@ Filter ubiquitination sites with FDR<0.01 ("Silver" and "Gold" categories)
 */
 process parse_ubiquitination {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/ubiquitination/table.tsv",
                 mode: 'copy'
 
@@ -121,7 +121,7 @@ list unique ids found in the ubiquitination table
 */
 process get_ubiquitination_genes {
 
-    publishDir "${out_dir}",
+    publishDir "${params.out_dir}",
                 pattern: "databases/ubiquitination/genes.txt",
                 mode: 'copy'
 
@@ -218,12 +218,6 @@ process ubiquitination_featvec {
 
     script:
     """
-    if [ -z "\${PYTHONPATH:-}" ]; then \\
-        export PYTHONPATH="${projectDir}/src"; \\
-    else \\
-        export PYTHONPATH="${projectDir}/src:\$PYTHONPATH"; \\
-    fi
-
     cat input/table.tsv | sed 's/_/\\t/' | cut -f1,3- > table.tsv
 
     ubiquitination_input_vector.py  \
